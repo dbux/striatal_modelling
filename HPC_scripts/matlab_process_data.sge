@@ -11,7 +11,7 @@
 # Run data process script
 module load apps/matlab
 
-cd /home/ac1drb/MatLab/process_data
+cd /home/ac1drb/MatLab/striatal_modelling
 
 matlab -nodesktop -nosplash -r 'run process_logs.m'
 
