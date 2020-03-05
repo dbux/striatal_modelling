@@ -10,8 +10,13 @@ timer.all = tic;
 rng('shuffle');
 
 % Where to save striatum data files
-attr.path = '~/Documents/1 - Projects/Striatal oscillations/Striatums/';  
-% attr.path = '/data/ac1drb/striatums/';
+if ~exist('~/Documents', 'dir')
+    % HPC
+    attr.path = '/data/ac1drb/striatums/';
+else
+    % Local
+    attr.path = '~/Documents/1 - Projects/Striatal oscillations/Striatums/';
+end
 
 % Statistical attributes
 % attr.num_msn = 6000;        % Number of MSNs

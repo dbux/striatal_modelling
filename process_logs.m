@@ -20,7 +20,7 @@ clc; clear variables
 addpath(genpath('/home/ac1drb/MatLab'));
 
 % Set basic parameters
-attr.Striatum_ID = '19.07.29_11.52_84900+827_1CH_0sep';
+attr.Striatum_ID = '20.02.25_10.51_84900+834_1CH_0sep_0overlap';
 attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
 attr.Experiment = 'Physical_1CH';
 attr.Channels = 1;
