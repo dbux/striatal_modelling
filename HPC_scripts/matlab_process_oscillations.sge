@@ -1,0 +1,18 @@
+#!/bin/bash
+#$ -t 1-100
+#$ -l rmem=20G
+#$ -l h_rt=0:5:00
+#$ -N Process_oscillations
+#$ -M d.r.buxton@sheffield.ac.uk 
+#$ -m ea
+#$ -j y
+#$ -o ~/logs/
+#$ -e ~/logs/
+
+# Run data process script
+module load apps/matlab
+
+cd /home/ac1drb/MatLab/process_data
+
+matlab -nodesktop -nosplash -r 'run chronload.m'
+

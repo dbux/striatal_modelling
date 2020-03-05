@@ -1,0 +1,127 @@
+#!/bin/bash
+#$ -t 1-100
+#$ -l rmem=60G
+#$ -l h_rt=4:00:00
+#$ -N Physical_1CH
+#$ -M d.r.buxton@sheffield.ac.uk 
+#$ -m ea
+#$ -j y
+#$ -o ~/logs/
+#$ -e ~/logs/
+
+# Set Iceberg / ShARC username
+export USER="ac1drb"
+
+# Set model name and experiment number
+export MODEL="Physical_1CH"
+export STRIATUM="20.02.25_10.51_84900+834_1CH_0sep_0overlap"
+export EXP_NO="0"
+
+####################
+
+# Set root directories
+if [ -d "/fastdata/${USER}" ]; then
+	FD="/fastdata/${USER}"
+else
+	FD="/fastdata-sharc/${USER}"
+fi
+
+export LISTS_ROOT="/data/${USER}/striatums"
+export LOGS_DIR="${HOME}/logs"
+export MODEL_ROOT="/data/${USER}/models"
+export OUTPUT_ROOT="${FD}/output"
+export SCRIPTS_DIR="${HOME}/scripts"
+export WORK_ROOT="${FD}/temp"
+export S2B_DIR="${HOME}/SpineML_2_BRAHMS"
+
+
+# Clear previous data
+# echo "Clearing old logs…"
+# rm ${LOGS_DIR}/*
+# echo "Clearing old temp files…"
+# rm -rf ${WORK_ROOT}
+# echo "Clearing old output…"
+# rm -rf ${OUTPUT_ROOT}
+
+# Set model and connection list directories
+export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
+export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
+
+# Set unique job ID based on SGE task ID
+export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
+
+# Model construction and execution loop
+cd $LISTS_DIR
+
+# Set MSN and FSI descriptor variants based on unique job ID
+# MSN descriptor from first digit, FSI descriptor from second digit
+i=$(echo "scale=0; ${SGE_MOD_ID}/10" | bc)"0"
+if (( ${i} == 00 )); then
+	i=$(echo "${i: -1}")
+fi
+
+j=$(echo "${SGE_MOD_ID: -1}0")
+if (( ${j} == 00 )); then
+	j=$(echo "${j: -1}")
+fi
+
+# Create UID for each simulation (must match the naming pattern of connection lists)         
+if [ -z "$i" ]; then
+	MSN_UID="bkMSN0"
+else                                    
+	MSN_UID="bkMSN${i}" 
+fi
+
+if [ -z "$j" ]; then
+	FSI_UID="bkFSI0"
+else
+	FSI_UID="bkFSI${j}"
+fi 
+SIM_UID="${MSN_UID}_${FSI_UID}"                                             
+
+# Get connection probability
+# CON_PROB=$(bc <<< "scale=1;1 - ${i} / 100")							
+
+# Set unique per-simulation work and output directories
+export WORK_DIR="${WORK_ROOT}/${MODEL}/${SIM_UID}"
+export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${SIM_UID}"
+echo ""
+echo "Working directory is ${WORK_DIR}"
+echo "Output directory is ${OUTPUT_DIR}"
+
+# Check for directory existence
+if [ ! -d ${WORK_DIR} ]; then
+    #echo "Making work dir"
+    mkdir -p ${WORK_DIR}
+	else echo "WARNING! Working directory already exists, proceeding anyway"
+fi
+
+# Create output directory
+if [ ! -d ${OUTPUT_DIR} ]; then
+    mkdir -p ${OUTPUT_DIR}
+	else echo "WARNING! Output directory already exists, proceeding anyway"
+fi
+
+# For each connection list file containing experiment UID
+echo "Copying connection lists…"
+for file in $(find . -maxdepth 1 -name "*${SIM_UID}*"); do 
+	# Remove initial ./             
+    FILE_FULL=$(echo $file | sed "s|^\./||")   
+	# Remove MSN/FSI-specific descriptors                         
+    FILE_TRIM=$(echo $FILE_FULL | sed "s/_bkMSN[0-9]\+_bkFSI[0-9]\+//") 
+	# Copy connection list to work directory with unique descriptors removed			
+    cp $file ${WORK_DIR}/${FILE_TRIM}									
+done
+
+# Copy other model files to work directory
+cp -n ${MODEL_DIR}/* ${WORK_DIR}
+# Rewrite model connection lists	
+echo "Modifying model.xml…"						            
+${SCRIPTS_DIR}/modify_connections.sh								      
+
+# Execute model on SGE
+echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${SIM_UID}…"
+cd ${S2B_DIR}
+export PATH=${PATH}:${HOME}/bin
+${S2B_DIR}/convert_script_s2b -gs \
+	-m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}

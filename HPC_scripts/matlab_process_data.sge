@@ -1,0 +1,17 @@
+#!/bin/bash
+#$ -l rmem=10G
+#$ -l h_rt=1:00:00
+#$ -N process_logs
+#$ -m beas
+#$ -M d.r.buxton@sheffield.ac.uk
+#$ -j y
+#$ -o ~/logs/
+#$ -e ~/logs/
+
+# Run data process script
+module load apps/matlab
+
+cd /home/ac1drb/MatLab/process_data
+
+matlab -nodesktop -nosplash -r 'run process_logs.m'
+

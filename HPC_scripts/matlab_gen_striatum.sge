@@ -1,0 +1,21 @@
+#!/bin/bash
+#$ -l rmem=15G
+#$ -l h_rt=36:00:00
+#$ -m beas
+#$ -M d.r.buxton@sheffield.ac.uk
+#$ -o ~/logs/generate_striatum.out
+#$ -e ~/logs/generate_striatum.err
+
+# Set root directories
+export LOGS_DIR="${HOME}/logs"
+
+# Clear previous data
+rm ${LOGS_DIR}/generate_striatum
+
+# Run striatum generation script
+module load apps/matlab
+
+cd /home/ac1drb/MatLab/gen_striatum
+
+matlab -nodesktop -nosplash -r 'run gen_striatum_main.m'
+
