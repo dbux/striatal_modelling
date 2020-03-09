@@ -18,7 +18,7 @@ else
 			# Get the number of CSV rows                                                
             CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})                  
             echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
-			# Construct the string occuring immediately before the number of connections
+			# Construct the string occurring immediately before the number of connections
             STR_MATCH=${file}'" num_connections="' 
 			# Correct the number of connections in model.xml                         
             sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml    

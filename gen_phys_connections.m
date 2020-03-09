@@ -22,7 +22,7 @@ connections.fsifsi = zeros((1000*length(striatum.linear)),3);
 connections.gap = [];       % Gap connection list does not need preallocation
 
 if flags.progress
-    fprintf('\nCreating connections...')
+    fprintf('\nCreating connections?')
     fprintf('\n(!) For a full-size network (1mm^3) creating connections may take 1-3 hours (!)')
     fprintf('\nStart time: %s | ', datestr(now, 'HH:MM:SS'))
 %     fprintf('\nEstimated completion time: %1.2f - %1.2f minutes... ', (0.09*length(striatum.linear))/60, (0.15*length(striatum.linear))/60)
@@ -78,7 +78,7 @@ for i = 1:length(striatum.linear)
     coninf.prob = [];       % Probability of making a connection at each trial to all other neurons
        
     if flags.debug
-        fprintf('\nConnecting neuron %d of %d... ', i, length(striatum.linear))
+        fprintf('\nConnecting neuron %d of %d? ', i, length(striatum.linear))
     end
   
     % Get the distance from current neuron to all other neurons. Must be a
@@ -192,7 +192,7 @@ end
 % Save connections to disk
 timer.save = tic;
 if flags.progress
-    fprintf('\nSaving connection data... ')
+    fprintf('\nSaving connection data? ')
 end
 filename = [striatum.dirname '/connections.mat'];
 save(filename, 'connections');
@@ -260,18 +260,18 @@ fclose(fc);
 if flags.progress
     fprintf('\nStriatal connectivity statistics (%d%% FSI):', attr.fsi_pct)
     fprintf('\n----------------------------------------------------------')
-    fprintf('\nType\t\t| No. of contacts\t| Distance (Âµm)')
+    fprintf('\nType\t\t| No. of contacts\t| Distance (µm)')
     fprintf('\n----------------------------------------------------------\n')
-    fprintf('MSNs - 1 MSN\t| %1.2f, Â± %1.2f\t| %1.2f Â± %1.2f\n', mean(msn1msn.numbers), std(msn1msn.numbers), ...
+    fprintf('MSNs - 1 MSN\t| %1.2f, ± %1.2f\t| %1.2f ± %1.2f\n', mean(msn1msn.numbers), std(msn1msn.numbers), ...
         mean(msn1msn.dists), std(msn1msn.dists))
-    fprintf('FSIs - 1 MSN\t| %1.2f, Â± %1.2f\t\t| %1.2f Â± %1.2f\n', mean(fsi1msn.numbers), std(fsi1msn.numbers), ...
+    fprintf('FSIs - 1 MSN\t| %1.2f, ± %1.2f\t\t| %1.2f ± %1.2f\n', mean(fsi1msn.numbers), std(fsi1msn.numbers), ...
         mean(fsi1msn.dists), std(fsi1msn.dists))
-    fprintf('1 FSI - MSNs\t| %1.2f, Â± %1.2f\t| %1.2f Â± %1.2f\n', mean(fsimsns.numbers), std(fsimsns.numbers), ...
+    fprintf('1 FSI - MSNs\t| %1.2f, ± %1.2f\t| %1.2f ± %1.2f\n', mean(fsimsns.numbers), std(fsimsns.numbers), ...
         mean(fsimsns.dists), std(fsimsns.dists))
-    fprintf('FSIs - 1 FSI\t| %1.2f, Â± %1.2f\t\t| %1.2f Â± %1.2f\n', mean(fsi1fsi.numbers), std(fsi1fsi.numbers), ...
+    fprintf('FSIs - 1 FSI\t| %1.2f, ± %1.2f\t\t| %1.2f ± %1.2f\n', mean(fsi1fsi.numbers), std(fsi1fsi.numbers), ...
         mean(fsi1fsi.dists), std(fsi1fsi.dists))
     try
-        fprintf('FSI gap junc\t| %1.2f, Â± %1.2f\t\t| %1.2f Â± %1.2f\n', mean(fsigap.numbers), std(fsigap.numbers), ...
+        fprintf('FSI gap junc\t| %1.2f, ± %1.2f\t\t| %1.2f ± %1.2f\n', mean(fsigap.numbers), std(fsigap.numbers), ...
         mean(fsigap.dists), std(fsigap.dists))
     catch
     end

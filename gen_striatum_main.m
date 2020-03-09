@@ -25,7 +25,7 @@ attr.delay_min = 0.1;       % Minimum connection delay (must not be less than Sp
 attr.delay_mult = 0.4;      % Delay multiplier - should be less than 1
 
 % Physical attributes
-attr.size = 500;           % Size of model striatum each side (?m) (Was 250?m in Humphries et al. 2009)
+attr.size = 400;            % Size of model striatum each side (?m) (Was 250?m in Humphries et al. 2009)
 attr.min_dist = 10;         % Minimum distance between neurons (?m)
 attr.centre_rad = 75;       % Radius of central region free from edge effects (?m)
 attr.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)
@@ -51,6 +51,7 @@ flags.progress = 1;         % Show progress indicator? (Set to 0 for Iceberg)
 flags.plot = 0;             % Show plot of striatum after generation?
 flags.save = 1;             % Save connection lists to disk?
 flags.binary = 1;           % Save binary versions of connection lists?
+flags.density = 0;          % Create input lists for varying neural densities?
 
 
 % Sanity checks
@@ -74,7 +75,7 @@ else
         connections = gen_phys_connections(striatum, attr, flags);
         
         % Separate connections into channels and save connection lists
-        if attr.ch_all == 1
+        if flags.density
             for i = 0:10:90
                 for j = 0:10:90
                     % Iterate active neuron density

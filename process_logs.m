@@ -21,7 +21,8 @@ addpath(genpath('/home/ac1drb/MatLab'));
 
 % Set basic parameters
 attr.Striatum_ID = '20.02.25_10.51_84900+834_1CH_0sep_0overlap';
-attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
+% attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
+attr.Striatum_path = strcat('/Users/tacd/Documents/', attr.Striatum_ID, '/');
 attr.Experiment = 'Physical_1CH';
 attr.Channels = 1;
 
@@ -37,13 +38,13 @@ mkdir(out_dir);
 cd(out_dir);
 
 % Save spiking data
-fprintf('Saving spiking data to CSV… ')
+fprintf('Saving spiking data to CSV? ')
 output_name = strcat(attr.Experiment, '_spikes.csv');
 struct2csv(results.Spikes, output_name);
 fprintf('done!\n')
 
 % Save oscillation data
-fprintf('Saving oscillation data to CSV… ')
+fprintf('Saving oscillation data to CSV? ')
 output_name = strcat(attr.Experiment, '_oscillations.csv');
 struct2csv(results.Oscillations, output_name);
 fprintf('done!\n')
@@ -59,12 +60,18 @@ if exist('/fastdata/ac1drb', 'dir')
 % Iceberg
 elseif exist('/fastdata-sharc/ac1drb', 'dir')
     attr.Log_root = strcat('/fastdata-sharc/ac1drb/output/', attr.Experiment, '/');
-% Local desktop    
-elseif exist('/home/dbuxton/Dropbox/', 'dir')
+% Local desktop (Linux)  
+elseif exist('/home/dbuxton/', 'dir')
     attr.Striatum_path = strcat(...
         '/home/dbuxton/Dropbox/University/2019 (Sheffield) - Striatal oscillations/Striatums/', ...
         attr.Striatum_ID, '/');
-    attr.Log_root = strcat('/home/dbuxton/Documents/Logs/', attr.Experiment, '/');  
+    attr.Log_root = strcat('/home/dbuxton/Documents/Logs/', attr.Experiment, '/'); 
+% Local desktop (Mac) 
+elseif exist('/Users/tacd/', 'dir')
+    attr.Striatum_path = strcat(...
+        '/Users/tacd/Documents/Striatums/', ...
+        attr.Striatum_ID, '/');
+    attr.Log_root = strcat('/Users/tacd/Documents/Logs/', attr.Experiment, '/'); 
 else
     error('Unable to determine logfile location');
 end
@@ -117,9 +124,14 @@ get_attributes(csv_list, csv_text);
                 % Get key text index
                 idx = strfind(attr.Logs(i).Trial, trial_text{j});
                 
-                % Extract number following key text
-                attr.Logs(i).(trial_text{j}) = sscanf(...
-                    attr.Logs(i).Trial(idx(1) + length(trial_text{j}):end), '%g');
+                try
+                    % Extract number following key text
+                    attr.Logs(i).(trial_text{j}) = sscanf(...
+                        attr.Logs(i).Trial(idx(1) + length(trial_text{j}):end), '%g');
+                catch
+                    % Ignore if single trial is being analysed
+                    fprintf('Unable to extract trial variables, assuming single trial\n');
+                end
             end
         end
     end
@@ -133,7 +145,7 @@ function[attr, output_spks, output_osc] = process_data_spikes(attr)
 % TODO: Test spike processing with multi-channel data
 
 % Load physical striatal data
-fprintf('Loading striatal data from %s… ', attr.Striatum_path)
+fprintf('Loading striatal data from %s? ', attr.Striatum_path)
 load(strcat(attr.Striatum_path, 'list.mat'), 'list');
 fprintf('done!\n')
 
@@ -151,7 +163,7 @@ for i = 1:size(attr.Logs, 2)
     
     try
         % Load spiking data and associated metadata
-        fprintf('Loading spiking data from %s… ', logfile)
+        fprintf('Loading spiking data from %s? ', logfile)
         [spikes, ...
             attr.Logs(i).Neurons_active, ...
             attr.Logs(i).Neurons_total, ...

@@ -33,7 +33,7 @@ striatum.neurons_centre = [];
 strinf.ptr = 1;                 % Points to the next available striatum entry
 
 if flags.progress
-    fprintf('\nInitializing %d�m^3 striatum with %d MSNs + %d%% FSIs... ', attr.size, pop.msn, attr.fsi_pct)
+    fprintf('\nInitializing ?m^3 striatum with %d MSNs + %d%% FSIs? ', attr.size, pop.msn, attr.fsi_pct)
 end
 
 % Place each neuron individually
@@ -74,7 +74,7 @@ end
 % Save striatum to disk
 timer.save = tic;
 if flags.progress
-    fprintf('Saving striatum data... ')
+    fprintf('Saving striatum data? ')
 end
 striatum.dirname = [attr.path num2str(strinf.id) '_' ...
     num2str(pop.msn) '+' num2str(pop.fsi) '_' num2str(attr.ch_all) 'CH_' num2str(flags.phys_ch) 'sep_' num2str(attr.ch_overlap) 'overlap/'];

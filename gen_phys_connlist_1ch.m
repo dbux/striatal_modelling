@@ -20,7 +20,7 @@ list.fsi(:,2) = 0:length(list.fsi) - 1;
 % Separate all MSN_MSN connections into D_type lists
 timer.chans = tic;
 if flags.progress
-    fprintf('\nSeparating connections into channels... ');
+    fprintf('\nSeparating connections into channels? ');
 end
 connections.d1.all = connections.msnmsn((connections.msnmsn(:,1) <= max(list.d1(:,1))),:);
 connections.d1.d1 = connections.d1.all((connections.d1.all(:,2) <= max(list.d1(:,1))),:);
@@ -55,7 +55,7 @@ num.msn_ch = floor((num.msn / 2 - num.bkg) / attr.ch_all);
 %% CORTICO-STRIATAL channel connections - Uses SpineCreator neuron IDs
 if flags.progress
     fprintf('\nCreating connection lists:\n');
-    fprintf('1) Cortical channel connections (to %d%% of MSNs, %d%% of FSIs)... ', 100 - attr.bkg_msn, 100 - attr.bkg_fsi)
+    fprintf('1) Cortical channel connections (to %d%% of MSNs, %d%% of FSIs)? ', 100 - attr.bkg_msn, 100 - attr.bkg_fsi)
 end
 timer.conn1 = tic;
   
@@ -205,7 +205,7 @@ end
 
 %% STRIATAL GABA connections - Converts MatLab to SpineCreator neuron IDs
 if flags.progress
-    fprintf('2) Striatal GABA connections... ')
+    fprintf('2) Striatal GABA connections? ')
 end
 timer.conn3 = tic;
 
@@ -335,7 +335,7 @@ end
 
 %% STRIATAL peptide connections
 if flags.progress
-    fprintf('4) Striatal peptide connections... ')
+    fprintf('4) Striatal peptide connections? ')
 end
 timer.conn4 = tic;
 
@@ -446,7 +446,7 @@ end
 %% Save neuron list and connections to disk
 timer.save = tic;
 if flags.progress
-    fprintf('\nSaving neuron and connection data... ')
+    fprintf('\nSaving neuron and connection data? ')
 end
 
 filename = [striatum.dirname '/connections.mat'];
