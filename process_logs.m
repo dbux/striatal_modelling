@@ -21,8 +21,11 @@ addpath(genpath('/home/ac1drb/MatLab'));
 
 % Set basic parameters
 attr.Striatum_ID = '20.02.25_10.51_84900+834_1CH_0sep_0overlap';
-% attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
-attr.Striatum_path = strcat('/Users/tacd/Documents/', attr.Striatum_ID, '/');
+% if exist('/data/ac1drb', 'dir')
+% 	attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
+% else
+%     attr.Striatum_path = strcat('/Users/tacd/Documents/', attr.Striatum_ID, '/');
+% end
 attr.Experiment = 'Physical_1CH';
 attr.Channels = 1;
 
@@ -56,9 +59,11 @@ function attr = get_metadata(attr)
 % Log path depends on current machine:
 % ShARC
 if exist('/fastdata/ac1drb', 'dir')
+    attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
     attr.Log_root = strcat('/fastdata/ac1drb/output/', attr.Experiment, '/') ;
 % Iceberg
 elseif exist('/fastdata-sharc/ac1drb', 'dir')
+    attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
     attr.Log_root = strcat('/fastdata-sharc/ac1drb/output/', attr.Experiment, '/');
 % Local desktop (Linux)  
 elseif exist('/home/dbuxton/', 'dir')
