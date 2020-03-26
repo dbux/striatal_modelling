@@ -47,11 +47,11 @@ attr.max_bg = 500;          % Maximum number of connections allowed to a BG neur
 flags.phys_mod = 1;         % Create physical model?
 flags.phys_ch = 0;          % Separate channels based on physical location? (TWO CHANNELS ONLY)
 flags.debug = 0;            % Show detailed information during initialization?
-flags.progress = 1;         % Show progress indicator? (Set to 0 for Iceberg)
+flags.progress = 0;         % Show progress indicator? (Set to 0 for Iceberg)
 flags.plot = 0;             % Show plot of striatum after generation?
 flags.save = 1;             % Save connection lists to disk?
 flags.binary = 1;           % Save binary versions of connection lists?
-flags.density = 0;          % Create input lists for varying neural densities?
+flags.density = 1;          % Create input lists for varying neural densities?
 
 
 % Sanity checks
