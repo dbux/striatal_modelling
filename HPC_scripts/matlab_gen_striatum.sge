@@ -15,7 +15,7 @@ rm ${LOGS_DIR}/generate_striatum
 # Run striatum generation script
 module load apps/matlab
 
-cd /home/ac1drb/MatLab/gen_striatum
+cd /home/ac1drb/MatLab/striatal_modelling
 
 matlab -nodesktop -nosplash -r 'run gen_striatum_main.m'
 
