@@ -25,7 +25,7 @@ attr.delay_min = 0.1;       % Minimum connection delay (must not be less than Sp
 attr.delay_mult = 0.4;      % Delay multiplier - should be less than 1
 
 % Physical attributes
-attr.size = 400;            % Size of model striatum each side (?m) (Was 250?m in Humphries et al. 2009)
+attr.size = 1000;            % Size of model striatum each side (?m) (Was 250?m in Humphries et al. 2009)
 attr.min_dist = 10;         % Minimum distance between neurons (?m)
 attr.centre_rad = 75;       % Radius of central region free from edge effects (?m)
 attr.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)
