@@ -67,9 +67,9 @@ if attr.ch_all == 1
     % In the single-channel model it doesn't matter which neurons don't
     % receive connections since neuron ID is not associated with location
     
-    connections.cortex.ch1.d1 = [0 : num.d1_ch ; 0 : num.d1_ch]';
-    connections.cortex.ch1.d2 = [(0 : num.d2_ch) + num.d1_ch + 1 ; 0 : num.d2_ch]';
-    connections.cortex.ch1.fsi = [0 : num.fsi ; 0 : num.fsi]';
+    connections.cortex.ch1.d1 = [0 : num.d1_ch - 1; 0 : num.d1_ch - 1]';
+    connections.cortex.ch1.d2 = [(0 : num.d2_ch) + num.d1_ch ; 0 : num.d2_ch - 1]';
+    connections.cortex.ch1.fsi = [0 : num.fsi - 1; 0 : num.fsi - 1]';
     
 %     connections.cortex.ch1.d1 = gen_list_allall(attr.ch_inputs, num.msn_ch);
 %     connections.cortex.ch1.d2 = gen_list_allall(attr.ch_inputs, num.msn_ch);

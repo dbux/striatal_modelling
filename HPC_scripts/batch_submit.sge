@@ -10,29 +10,29 @@
 #$ -e ~/logs/
 
 # Set Iceberg / ShARC username
-export USER="ac1drb"
+# export USER="ac1drb"
 
 # Set model name and experiment number
-export MODEL="Physical_1CH"
-export STRIATUM="20.02.25_10.51_84900+834_1CH_0sep_0overlap"
-export EXP_NO="0"
+# export MODEL="Physical_1CH"
+# export STRIATUM="20.02.25_10.51_84900+834_1CH_0sep"
+# export EXP_NO="0"
 
 ####################
 
 # Set root directories
-if [ -d "/fastdata/${USER}" ]; then
-	FD="/fastdata/${USER}"
-else
-	FD="/fastdata-sharc/${USER}"
-fi
+# if [ -d "/fastdata/${USER}" ]; then
+# 	FD="/fastdata/${USER}"
+# else
+# 	FD="/fastdata-sharc/${USER}"
+# fi
 
-export LISTS_ROOT="/data/${USER}/striatums"
-export LOGS_DIR="${HOME}/logs"
-export MODEL_ROOT="/data/${USER}/models"
-export OUTPUT_ROOT="${FD}/output"
-export SCRIPTS_DIR="${HOME}/scripts"
-export WORK_ROOT="${FD}/temp"
-export S2B_DIR="${HOME}/SpineML_2_BRAHMS"
+# export LISTS_ROOT="/data/${USER}/striatums"
+# export LOGS_DIR="${HOME}/logs"
+# export MODEL_ROOT="/data/${USER}/models"
+# export OUTPUT_ROOT="${FD}/output"
+# export SCRIPTS_DIR="${HOME}/scripts"
+# export WORK_ROOT="${FD}/temp"
+# export S2B_DIR="${HOME}/SpineML_2_BRAHMS"
 
 
 # Clear previous data

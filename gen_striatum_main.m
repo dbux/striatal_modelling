@@ -15,7 +15,7 @@ if ~exist('~/Documents', 'dir')
     attr.path = '/data/ac1drb/striatums/';
 else
     % Local
-    attr.path = '~/Documents/1 - Projects/Striatal oscillations/Striatums/';
+    attr.path = '/Volumes/GoogleDrive/My Drive/1 - Projects/Striatal oscillations/Striatums/';
 end
 
 % Statistical attributes
