@@ -5,7 +5,7 @@ export USER="ac1drb"
 
 # Set model name and experiment number
 export MODEL="Physical_1CH"
-export STRIATUM="20.02.25_10.51_84900+834_1CH_0sep"
+export STRIATUM="20.03.27_12.09_84900+864_1CH_0sep"
 export EXP_NO="0"
 
 ####################
