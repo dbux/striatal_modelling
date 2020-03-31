@@ -40,5 +40,5 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Send jobs to SGE
-qsub -V -rmem=${RMEM} -h_rt=${TIME} batch_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge
 
