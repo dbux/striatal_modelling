@@ -1,13 +1,14 @@
 #!/bin/bash
 #$ -t 1-100
-#$ -l rmem=60G
-#$ -l h_rt=4:00:00
 #$ -N Physical_1CH
 #$ -M d.r.buxton@sheffield.ac.uk 
 #$ -m ea
 #$ -j y
 #$ -o ~/logs/
 #$ -e ~/logs/
+
+# -l rmem=60G
+# -l h_rt=4:00:00
 
 # Set Iceberg / ShARC username
 # export USER="ac1drb"
@@ -44,8 +45,8 @@
 # rm -rf ${OUTPUT_ROOT}
 
 # Set model and connection list directories
-export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
-export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
+# export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
+# export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Set unique job ID based on SGE task ID
 export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
