@@ -7,47 +7,6 @@
 #$ -o ~/logs/
 #$ -e ~/logs/
 
-# -l rmem=60G
-# -l h_rt=4:00:00
-
-# Set Iceberg / ShARC username
-# export USER="ac1drb"
-
-# Set model name and experiment number
-# export MODEL="Physical_1CH"
-# export STRIATUM="20.02.25_10.51_84900+834_1CH_0sep"
-# export EXP_NO="0"
-
-####################
-
-# Set root directories
-# if [ -d "/fastdata/${USER}" ]; then
-# 	FD="/fastdata/${USER}"
-# else
-# 	FD="/fastdata-sharc/${USER}"
-# fi
-
-# export LISTS_ROOT="/data/${USER}/striatums"
-# export LOGS_DIR="${HOME}/logs"
-# export MODEL_ROOT="/data/${USER}/models"
-# export OUTPUT_ROOT="${FD}/output"
-# export SCRIPTS_DIR="${HOME}/scripts"
-# export WORK_ROOT="${FD}/temp"
-# export S2B_DIR="${HOME}/SpineML_2_BRAHMS"
-
-
-# Clear previous data
-# echo "Clearing old logs…"
-# rm ${LOGS_DIR}/*
-# echo "Clearing old temp files…"
-# rm -rf ${WORK_ROOT}
-# echo "Clearing old output…"
-# rm -rf ${OUTPUT_ROOT}
-
-# Set model and connection list directories
-# export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
-# export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-
 # Set unique job ID based on SGE task ID
 export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
 
