@@ -118,23 +118,23 @@ end
 % legend('MSN-MSN', 'FSI-MSN', 'FSI-FSI', 'FSI gap')
 
 
-% Plot the striatum if desired
-if flags.plot == 1
-    figure(2); clf;
-    scatter3(striatum.neurons(:,1),striatum.neurons(:,2),striatum.neurons(:,3), 0.1)
-    hold on
-    scatter3(striatum.neurons_centre(:,1),striatum.neurons_centre(:,2),striatum.neurons_centre(:,3), 20, 'o', 'r', ...
-      'MarkerFaceColor', 'r')
-    scatter3(striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),1),...
-        striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),2),...
-        striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),3), 20, 'o', 'm', 'MarkerFaceColor', 'm')
-
-    res = 25;
-    r = 75 * ones(res, res);
-    [th, phi] = meshgrid(linspace(0, 2*pi, res), linspace(-pi, pi, res));
-    [x,y,z] = sph2cart(th, phi, r);
-    x = x + strinf.centre;
-    y = y + strinf.centre;
-    z = z + strinf.centre;
-    surface(x,y,z,'FaceColor', 'none')   
-end
+% % Plot the striatum if desired
+% if flags.plot == 1
+%     figure(2); clf;
+%     scatter3(striatum.neurons(:,1),striatum.neurons(:,2),striatum.neurons(:,3), 0.1)
+%     hold on
+%     scatter3(striatum.neurons_centre(:,1),striatum.neurons_centre(:,2),striatum.neurons_centre(:,3), 20, 'o', 'r', ...
+%       'MarkerFaceColor', 'r')
+%     scatter3(striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),1),...
+%         striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),2),...
+%         striatum.neurons(striatum.linear_centre(striatum.linear_centre(:,2)==fsi),3), 20, 'o', 'm', 'MarkerFaceColor', 'm')
+% 
+%     res = 25;
+%     r = 75 * ones(res, res);
+%     [th, phi] = meshgrid(linspace(0, 2*pi, res), linspace(-pi, pi, res));
+%     [x,y,z] = sph2cart(th, phi, r);
+%     x = x + strinf.centre;
+%     y = y + strinf.centre;
+%     z = z + strinf.centre;
+%     surface(x,y,z,'FaceColor', 'none')   
+% end
