@@ -1,6 +1,6 @@
 #!/bin/bash
-#$ -l rmem=15G
-#$ -l h_rt=36:00:00
+#$ -l rmem=20G
+#$ -l h_rt=48:00:00
 #$ -m beas
 #$ -M d.r.buxton@sheffield.ac.uk
 #$ -o ~/logs/generate_striatum.out
