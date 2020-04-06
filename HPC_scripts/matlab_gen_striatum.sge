@@ -10,7 +10,7 @@
 export LOGS_DIR="${HOME}/logs"
 
 # Clear previous data
-rm ${LOGS_DIR}/*
+# rm ${LOGS_DIR}/*
 
 # Run striatum generation script
 module load apps/matlab
