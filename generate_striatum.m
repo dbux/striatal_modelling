@@ -5,6 +5,7 @@
 clear variables; clc
 timer.all = tic;
 rng('shuffle');
+addpath(genpath('~/MatLab'));
 
 % Where to save striatum data files
 if ~exist('~/Documents', 'dir')
