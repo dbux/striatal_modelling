@@ -59,21 +59,28 @@ else
     connections = gen_phys_connections(striatum, attr, flags);
 
     % Create corticostriatal connections and output all connection lists
-    % TODO: Loop this cleanly
-    for i = 0:10:90
-        for j = 0:10:90
-            % Iterate active neuron density using flags.density and flags.overlap
-            attr.bkg_msn = i;
-            attr.bkg_fsi = j;
+    if flags.density
+        % Iterate active neuron density
+        for i = 0:20:80
+            for j = 0:20:80
+                attr.bkg_msn = i;
+                attr.bkg_fsi = j;
 
+                [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+            end
+        end
+    end
+    
+    if flags.overlap 
+        % Iterate channel overlap
+        for k = -80:20:80           
+            attr.ch_overlap = k;
+            
             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
         end
     end
     
-    for k = -90:10:90
-        % Iterate channel overlap
-        attr.ch_overlap = k;
-
+    if ~(flags.density || flags.overlap)
         [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
     end
 end
@@ -576,6 +583,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
 
     % Cortico-striatal connections differ based on number of input channels
     if attr.ch_all == 1
+        conn_id = sprintf('bkMSN%d_bkFSI%d', attr.bkg_msn, attr.bkg_fsi);
         % In the single-channel model it doesn't matter which neurons don't
         % receive connections since neuron ID is not associated with location
 
@@ -595,20 +603,19 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                 for k = 0:1          
                     % Channel input
 
-                    name.syn = sprintf('syn%d_bkMSN%d_bkFSI%d', k, attr.bkg_msn, attr.bkg_fsi);
+                    name.syn = [sprintf('syn%d_', k), conn_id];
                     save_list(listpath, connections.cortex.ch1.(d_dst), name, flags);
                 end
             end
 
             % FSI populations only use a single synapse
             name.dst = 'Striatum_FSI';
-            name.syn = sprintf('syn0_bkMSN%d_bkFSI%d', attr.bkg_msn, attr.bkg_fsi);
+            name.syn = ['syn0_', conn_id];
             save_list(listpath, connections.cortex.ch1.fsi, name, flags);
         end
 
     elseif attr.ch_all == 2
-
-        % TODO: EXPORT CH LISTS AS CO_ORDS FOR PLOTTING
+        conn_id = sprintf('bkMSN%d_bkFSI%d_ovlp%d', attr.bkg_msn, attr.bkg_fsi, attr.ch_overlap); 
 
         % Physically partition a two-channel striatum
         if flags.phys_ch  
@@ -697,14 +704,14 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
 
                     % Create both AMPA and NMDA connections to MSNs
                     for k = 0:1
-                        name.syn = sprintf('syn%d_bkMSN%d_bkFSI%d_ovlp%d', k, attr.bkg_msn, attr.bkg_fsi, attr.ch_overlap);                
+                        name.syn = [sprintf('syn%d_', k), conn_id];                
                         save_list(listpath, connections.cortex.(ch).(d_dst), name, flags);
                     end
                 end
 
                 % FSIs only use a single synapse
                 name.dst = 'Striatum_FSI';
-                name.syn = sprintf('syn0_bkMSN%d_bkFSI%d_ovlp%d', attr.bkg_msn, attr.bkg_fsi, attr.ch_overlap);
+                name.syn = ['syn%0_', conn_id];
                 save_list(listpath, connections.cortex.(ch).fsi, name, flags);
             end
         end
@@ -901,10 +908,10 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     striatum.fsi.inactive     = striatum.fsi.all(~ismember(striatum.fsi.all, striatum.fsi.active, 'rows'), :);
 
     % Export co-ordinates of all MSNs and FSIs
-    export_striatum(striatum.msn, 'striatum.msn', striatum.dirname)
-    export_striatum(striatum.fsi, 'striatum.fsi', striatum.dirname)
+    export_striatum(striatum.msn, 'striatum.msn', striatum.dirname, conn_id)
+    export_striatum(striatum.fsi, 'striatum.fsi', striatum.dirname, conn_id)
     
-    function export_striatum(s_data, s_name, s_dir)
+    function export_striatum(s_data, s_name, s_dir, conn_id)
         fields = fieldnames(s_data);
         for idx = 1:numel(fields)           
             % Get full name of current structure location
@@ -914,10 +921,10 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
             s_field = s_data.(fields{idx});
             if isstruct(s_field)
                 % Recurse function until nested structures end
-                export_striatum(s_field, curr_name, s_dir);
+                export_striatum(s_field, curr_name, s_dir, conn_id);
             else
                 % Export current co-ordinate matrix to disk
-                cell2csv([s_dir, '/', curr_name, '.csv'], ...
+                cell2csv([s_dir, '/', conn_id, '_', curr_name, '.csv'], ...
                     [{[curr_name, '_X'], [curr_name, '_Y'], [curr_name, '_Z']} ; ...
                     num2cell(s_field)]);
             end
