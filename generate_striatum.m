@@ -30,7 +30,7 @@ attr.fsi_pct     = 1;       % Percentage of MSNs to be added as FSIs
 
 % Connectivity attributes
 attr.ch_all     = 2;        % Total number of channels (not including background)
-attr.ch_width   = 0;      % Relative width of each channels in physical model
+attr.ch_width   = 100;      % Percentage width of each channel in physical model (0 means no channel inputs).
 attr.bkg_msn    = 0;        % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
 attr.bkg_fsi    = 0;        % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
 
@@ -60,8 +60,10 @@ else
     % Create intrastriatal connections
     connections = gen_phys_connections(striatum, attr, flags);
 
+    % TODO: Tidy up this iteration, make more flexible for future changes
     % Create corticostriatal connections and output all connection lists
     if flags.density
+        attr.ch_width = 100;
         % Iterate active neuron density
         for i = 0:20:80
             for j = 0:20:80
@@ -71,15 +73,20 @@ else
                 [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
             end
         end
+        attr.bkg_msn = 0;
+        attr.bkg_fsi = 0;
     end
     
     if flags.width 
+        attr.bkg_msn = 0;
+        attr.bkg_fsi = 0;
         % Iterate channel width
-        for k = 0:0.1:1           
+        for k = 10:10:100          
             attr.ch_width = k;
             
             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
         end
+        attr.ch_width = 100;        
     end
     
     if ~(flags.density || flags.width)
@@ -104,7 +111,6 @@ end
 
 % % % % % % % % % %
 % FUNCTIONS
-%
 function[striatum] = gen_phys_striatum(attr, flags)
     % Generates a model striatum with topology based on the description in
     % page 7 of Humphries, Wood & Gurney (2010)
@@ -571,7 +577,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     if flags.progress
         fprintf('done! (%3.2fs)\n', toc(timer.chans))
         fprintf('(%d%% MSNs and %d%% FSIs background-only; %s%% channel width)\n', ...
-            attr.bkg_msn, attr.bkg_fsi, num2str(attr.ch_width * 100))
+            attr.bkg_msn, attr.bkg_fsi, num2str(attr.ch_width))
     end
 
     % It's useful to know how many of each neuron type there are
@@ -603,7 +609,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     % Create connection ID for current background / channel width profile
     % Must convert attr.ch_width to string to avoid floating-point errors
     % Must do string substitution becuase struct fields cannot contain '.'
-    conn_id = sprintf('bkMSN%d_bkFSI%d_wCH%s', attr.bkg_msn, attr.bkg_fsi, strrep(num2str(attr.ch_width),'.','_'));
+    conn_id = sprintf('bkMSN%d_bkFSI%d_wCH%s', attr.bkg_msn, attr.bkg_fsi, num2str(attr.ch_width));
 
     % Cortico-striatal connections differ based on number of input channels
     if attr.ch_all == 1
@@ -650,8 +656,8 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                 % >0.5 creates a region with MSNs in both channels   
 %                 list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= (attr.size / 2) + (attr.size * (attr.ch_width / 100) / 2), :);
 %                 list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= (attr.size / 2) - (attr.size * (attr.ch_width / 100) / 2), :); 
-                list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= attr.size * attr.ch_width, :);
-                list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= attr.size * attr.ch_width, :);
+                list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= 0 + (attr.size * (attr.ch_width / 100)), :);
+                list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= attr.size - (attr.size * (attr.ch_width / 100)), :);
 
                 for j = 1:attr.ch_all
                     % Set dynamic structure fieldname
@@ -924,7 +930,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         striatum.fsi.inactive     = striatum.fsi.all(~ismember(striatum.fsi.all, striatum.fsi.active, 'rows'), :);
 
         % Export co-ordinates of all MSNs and FSIs
-        save_dir = [striatum.dirname, 'neuron_data/', strrep(conn_id, 'p0_', 'p0.')];
+        save_dir = [striatum.dirname, 'neuron_data/', strrep(conn_id, 'CH0_', 'CH0.')];
         mkdir(save_dir);
         
         export_striatum(striatum.msn, 'striatum.msn', save_dir)

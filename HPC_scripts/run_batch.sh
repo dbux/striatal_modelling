@@ -7,7 +7,7 @@ export TIME="8:00:00"
 
 # Set model name and experiment number
 export MODEL="Physical_1CH"
-export STRIATUM="20.03.27_12.09_84900+864_1CH_0sep"
+export STRIATUM="20.04.08_16.05_84900+869_2CH"
 export EXP_NO="0"
 
 ####################
@@ -26,7 +26,6 @@ export S2B_DIR="${HOME}/SpineML_2_BRAHMS"
 export SCRIPTS_DIR="${HOME}/scripts"
 export WORK_ROOT="${FD}/temp"
 
-
 # Clear previous data
 echo "Clearing old logs…"
 rm ${LOGS_DIR}/*
@@ -39,6 +38,9 @@ rm -rf ${OUTPUT_ROOT}
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
+# TODO: Add batch variables to pass through to script
+# bkMSN, bkFSI, wCH
+
 # Send jobs to SGE
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge wCH
 
