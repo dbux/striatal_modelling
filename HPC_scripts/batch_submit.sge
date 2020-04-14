@@ -1,5 +1,4 @@
 #!/bin/bash
-#$ -t 1:100
 #$ -M d.r.buxton@sheffield.ac.uk
 #$ -m ea
 #$ -j y

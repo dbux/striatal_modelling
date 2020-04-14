@@ -40,8 +40,9 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # TODO: Add batch variables to pass through to script
 # bkMSN, bkFSI, wCH
+# TODO: Modify stride based on number of variables to vary
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} varying over ${1} ${2}"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge ${1} ${2}
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t 1:100:10 -N=${MODEL} batch_submit.sge ${1} ${2}
 
