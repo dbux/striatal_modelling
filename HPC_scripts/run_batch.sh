@@ -7,7 +7,7 @@ export TIME="8:00:00"
 
 # Set model name and experiment number
 export MODEL="Physical_1CH"
-export STRIATUM="20.04.08_16.05_84900+869_2CH"
+export STRIATUM="20.04.10_17.00_84900+849_2CH"
 export EXP_NO="0"
 
 ####################
@@ -42,5 +42,5 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 # bkMSN, bkFSI, wCH
 
 # Send jobs to SGE
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge wCH
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} batch_submit.sge ${1} ${2}
 

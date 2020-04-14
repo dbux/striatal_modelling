@@ -47,12 +47,14 @@ flags.width     = 1;        % Create inputs lists for varying channel width?
 % BEGIN
 %
 % Sanity checks
-if flags.phys_ch && attr.ch_all ~= 2
-    error('Trying to partition a physical model without two channels')
-elseif attr.size > 1000
+% if flags.phys_ch && attr.ch_all ~= 2
+%     error('Trying to partition a physical model without two channels')
+if attr.size > 1000
     error('Trying to create too large a striatum')
 elseif attr.bkg_msn > 100 || attr.bkg_fsi > 100
     error('Trying to create too many background neurons')
+elseif attr.ch_width > 100 || attr.ch_width == 0
+    error('Invalid channel width')
 else
     % Create striatum structure
     striatum = gen_phys_striatum(attr, flags);
@@ -146,7 +148,7 @@ function[striatum] = gen_phys_striatum(attr, flags)
     strinf.ptr = 1;                 % Points to the next available striatum entry
 
     if flags.progress
-        fprintf('\nInitializing %dμm³ striatum with %d MSNs + %d%% FSIs… ', attr.size, pop.msn, attr.fsi_pct)
+        fprintf('Initializing %dμm³ striatum with %d MSNs + %d%% FSIs… ', attr.size, pop.msn, attr.fsi_pct)
     end
 
     % Place each neuron individually
@@ -210,16 +212,17 @@ function[striatum, strinf] = gen_place_neuron(striatum, strinf, attr, n_type)
 
     while n_ok == 0
         % Generate random xyz co-ordinates for neuron placement
-        n_loc = randi(attr.size,1,3);
+        n_loc = randi(attr.size, 1, 3);
+        
         % Assume that the co-ords are OK unless we decide otherwise
         n_ok = 1;
 
         % If those co-ords are already occupied, generate a new set
-        while striatum.main(n_loc(1),n_loc(2),n_loc(3)) ~= 0
-            n_loc = randi(attr.size,1,3);
+        while striatum.main(n_loc(1), n_loc(2), n_loc(3)) ~= 0
+            n_loc = randi(attr.size, 1, 3);
         end
 
-        % Create a set of 'buffer' co-ords that extend the minimum
+        % Create a set of 'buffer' co-ordinates that extend the minimum
         % separation distance away from the potential neuron co-ords in all directions
         for j = 1:3
             if n_loc(j) - attr.min_dist < 1
@@ -235,41 +238,63 @@ function[striatum, strinf] = gen_place_neuron(striatum, strinf, attr, n_type)
             end
         end
 
+%         % Test to see if any neuron already in this area would be too close
+%         % to the new neuron. Test is for distance, not just presence,
+%         % because diagonal distances are greater and may be acceptable
+%         for x = buffer{1}(1):buffer{1}(2)
+%             for y = buffer{2}(1):buffer{2}(2)
+%                 for z = buffer{3}(1):buffer{3}(2)
+%                     if striatum.main(x,y,z) ~= 0
+%                         if distancePoints3d([n_loc(1) n_loc(2) n_loc(3)], [x y z]) < attr.min_dist
+%     %                         if flags.debug == 1
+%     %                             fprintf('\nNeuron %d at [%d, %d, %d] only %1.2fµm from neuron at [%d, %d, %d] - trying again', ...
+%     %                                 i, n(1), n(2), n(3), distancePoints3d([n(1) n(2) n(3)], [x y z]), x, y, z)
+%     %                         end
+% 
+%                             % If minimum distance is violated then set
+%                             % 'neuron not OK' and start again
+%                             n_ok = 0;
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+
+
         % Test to see if any neuron already in this area would be too close
         % to the new neuron. Test is for distance, not just presence,
-        % because diagonal distances are greater and may be acceptable
-        for x = buffer{1}(1):buffer{1}(2)
-            for y = buffer{2}(1):buffer{2}(2)
-                for z = buffer{3}(1):buffer{3}(2)
-                    if striatum.main(x,y,z) ~= 0
-                        if distancePoints3d([n_loc(1) n_loc(2) n_loc(3)], [x y z]) < attr.min_dist
-    %                         if flags.debug == 1
-    %                             fprintf('\nNeuron %d at [%d, %d, %d] only %1.2fµm from neuron at [%d, %d, %d] - trying again', ...
-    %                                 i, n(1), n(2), n(3), distancePoints3d([n(1) n(2) n(3)], [x y z]), x, y, z)
-    %                         end
-
-                            % If minimum distance is violated then set
-                            % 'neuron not OK' and start again
-                            n_ok = 0;
-                        end
-                    end
+        % because neuron may be close in only one or two dimensions
+        
+        % Define buffer zone
+        n_buffer = striatum.main(...
+                buffer{1}(1):buffer{1}(2), ...
+                buffer{2}(1):buffer{2}(2), ...
+                buffer{3}(1):buffer{3}(2));
+        
+        % If any neurons are present in the buffer zone
+        if any(n_buffer, 'all')
+            % Get co-ordinates of all neurons in buffer zone
+            [x, y, z] = ind2sub(size(n_buffer), find(n_buffer));
+            for n = 1:numel(x)               
+                % If minimum distance is violated then set 'neuron not OK'
+                if distancePoints3d(n_loc, [x(n), y(n), z(n)]) < attr.min_dist         
+                    n_ok = 0;
                 end
             end
         end
+        
     end
 
-    % If the new neuron is close to the centre of the striatum, add it to
-    % the list of central neurons
-    if distancePoints3d([strinf.centre strinf.centre strinf.centre], [n_loc(1) n_loc(2) n_loc(3)]) <= attr.centre_rad
-        striatum.linear_centre = [striatum.linear_centre; strinf.ptr, n_type];
-        striatum.neurons_centre = [striatum.neurons_centre ; n_loc(1) n_loc(2) n_loc(3)];
+    % If the new neuron is close to the centre of the striatum, add it to the list of central neurons
+    if distancePoints3d([strinf.centre, strinf.centre, strinf.centre], n_loc) <= attr.centre_rad
+        striatum.linear_centre  = [striatum.linear_centre ; strinf.ptr, n_type];
+        striatum.neurons_centre = [striatum.neurons_centre ; n_loc];
     end
 
-    % Everything checks out! Add the neuron to the striatum and the neuron
-    % location register
-    striatum.main(n_loc(1),n_loc(2),n_loc(3)) = n_type;
+    % Everything checks out! Add the neuron to the striatum and the neuron location register
+    striatum.main(n_loc) = n_type;
     striatum.linear(strinf.ptr) = n_type;
-    striatum.neurons(strinf.ptr,:) = [n_loc(1) n_loc(2) n_loc(3)];
+    striatum.neurons(strinf.ptr,:) = n_loc;
     strinf.ptr = strinf.ptr + 1;
 end
 
@@ -364,27 +389,83 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
 
         % Run the trials for each pair and generate connections. Store the
         % connection pair, type, and the distance between the two neurons
-        for j = 1:max(coninf.trials(:,1))
-            for k = 1:length(coninf.trials)
-                if coninf.trials(k,1) ~= 0
-                    if rand < coninf.prob(k,1)
+        
+        % TODO: Improve this with arrayfun
+        % for (length of [trials])
+        % generate trials(n) number of rand numbers
+        % if any of them are lower than prob(n)
+        % create that many connections between i and (target neuron)
+        % Apply all that to every element in trials with arrayfun?
+%         for n = 1: numel(coninf.trials)
+%         if any(rand(1, coninf.trials) < coninf.prob
+
+        % SWAPPED METHOD
+        for k = 1:length(coninf.trials)
+            for j = 1:coninf.trials(k)
+%                 if coninf.trials(k, 1) ~= 0
+                    if rand < coninf.prob(k, 1)
                         coninf.dist_this = coninf.dist_all(k);
                         if coninf.type(k) == (msn+msn)
-                            connections.msnmsn(ptr,:) = [i k coninf.dist_this];
+                            connections.msnmsn(ptr,:) = [i, k, coninf.dist_this];
                         elseif coninf.type(k) == (fsi+msn)
-                            connections.fsimsn(ptr,:) = [i k coninf.dist_this];
+                            connections.fsimsn(ptr,:) = [i, k, coninf.dist_this];
                         elseif coninf.type(k) == (fsi+fsi)
-                            connections.fsifsi(ptr,:) = [i k coninf.dist_this];
+                            connections.fsifsi(ptr,:) = [i, k, coninf.dist_this];
                         else
                             error('Unexpected connection type!')
                         end
                         ptr = ptr+1;
                         coninf.count = coninf.count + 1;
                     end
-                    coninf.trials(k,1) = coninf.trials(k,1) - 1;
-                end
+%                     coninf.trials(k,1) = coninf.trials(k,1) - 1;
+%                 end
             end
         end
+
+%         % REPMAT METHOD - APPEARS SLOWER
+%         for n = 1:length(coninf.trials)
+%             conn = repmat([i, n, coninf.dist_all(n)], ...
+%                 nnz(rand(1, coninf.trials(n)) < coninf.prob(n)), 1);
+%             conn_size = size(conn, 1);
+%             if ~isempty(conn)
+%                 switch coninf.type(n)
+%                     case (msn + msn)
+%                         connections.msnmsn(ptr : ptr + conn_size - 1, :) = conn;
+%                     case (fsi + msn)
+%                         connections.fsimsn(ptr : ptr + conn_size - 1, :) = conn;
+%                     case (fsi + fsi)
+%                         connections.fsifsi(ptr : ptr + conn_size - 1, :) = conn;
+%                     otherwise
+%                         error('Unexpected connection type!')
+%                 end
+%                 ptr = ptr + conn_size;
+%                 coninf.count = coninf.count + conn_size;
+%             end
+%         end
+        
+       
+        % ORIGINAL METHOD
+%         for j = 1:max(coninf.trials(:, 1))
+%             for k = 1:length(coninf.trials)
+%                 if coninf.trials(k, 1) ~= 0
+%                     if rand < coninf.prob(k, 1)
+%                         coninf.dist_this = coninf.dist_all(k);
+%                         if coninf.type(k) == (msn+msn)
+%                             connections.msnmsn(ptr,:) = [i, k, coninf.dist_this];
+%                         elseif coninf.type(k) == (fsi+msn)
+%                             connections.fsimsn(ptr,:) = [i, k, coninf.dist_this];
+%                         elseif coninf.type(k) == (fsi+fsi)
+%                             connections.fsifsi(ptr,:) = [i, k, coninf.dist_this];
+%                         else
+%                             error('Unexpected connection type!')
+%                         end
+%                         ptr = ptr+1;
+%                         coninf.count = coninf.count + 1;
+%                     end
+%                     coninf.trials(k,1) = coninf.trials(k,1) - 1;
+%                 end
+%             end
+%         end
 
         % If the current neuron is an FSI, run connection trials for gap junctions
         if striatum.linear(i) == fsi
@@ -408,7 +489,7 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
 
         if flags.debug == 0 && flags.progress
             percentDone = 100 * i / length(striatum.linear);
-            msg = sprintf('Percent done: %3.1f', percentDone);
+            msg = sprintf('Percent done: %3.3f', percentDone);
             fprintf([reverseStr, msg])
             reverseStr = repmat(sprintf('\b'), 1, length(msg));
         end
@@ -616,9 +697,9 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         % In the single-channel model it doesn't matter which neurons don't
         % receive connections since neuron ID is not associated with location
 
-        connections.cortex.ch1.d1.(conn_id)  = [0 : num.d1_ch - 1; 0 : num.d1_ch - 1]';
-        connections.cortex.ch1.d2.(conn_id)  = [(0 : num.d2_ch - 1) + num.d1_ch ; 0 : num.d2_ch - 1]';
-        connections.cortex.ch1.fsi.(conn_id) = [0 : num.fsi_ch - 1; 0 : num.fsi_ch - 1]';
+        connections.cortex.ch1.d1.(conn_id)  = [ 0 : num.d1_ch - 1                           ; 0 : num.d1_ch - 1]';
+        connections.cortex.ch1.d2.(conn_id)  = [(0 : num.d2_ch - 1) + num.d1_ch              ; 0 : num.d2_ch - 1]';
+        connections.cortex.ch1.fsi.(conn_id) = [(0 : num.fsi_ch - 1) + num.d1_ch + num.d2_ch ; 0 : num.fsi_ch - 1]';
 
         % Save connection lists
         if flags.save
@@ -667,14 +748,23 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                     list.(ch).(msn) = list.(ch).(msn)(1:end - (floor(size(list.(ch).(msn), 1) * (attr.bkg_msn / 100))), :);
                     list.(ch).fsi   = list.fsi(1:end - (floor(size(list.fsi, 1) * (attr.bkg_fsi / 100))), :);
 
-                    % Create channel connections to striatum
-                    % FROM: Each cortical channel (-1 for SpineCreator 0-indexing)
-                    % TO:   Each MSN or FSI in each channel
-                    % DELAY:N/A
-%                     connections.cortex.(ch).(msn) = gen_list_allall(attr.ch_inputs, list.(ch).(msn)(:,2));
-                    connections.cortex.(ch).(msn).(conn_id) = [0 : length(list.(ch).(msn)) - 1 ; list.(ch).(msn)(:,2)']';
-%                     connections.cortex.(ch).fsi = gen_list_allall(attr.ch_inputs, list.(ch).fsi(:,2));
-                    connections.cortex.(ch).fsi.(conn_id) = [0 : length(list.(ch).fsi) - 1 ; list.(ch).fsi(:,2)']';
+                    % Channel connections to striatum
+                    % FROM:  Each cortical channel (-1 for SpineCreator 0-indexing)
+                    % TO:    Each MSN or FSI in each channel
+                    % DELAY: N/A                  
+                    if i==2
+                        % D2 connections come after D1 connections
+                        connections.cortex.(ch).(msn).(conn_id) = [(0 : length(list.(ch).(msn)) - 1) + length(list.(ch).d1) ...
+                            ; list.(ch).(msn)(:,2)']';
+                        
+                        % FSI connections come after all MSN connections
+                        connections.cortex.(ch).fsi.(conn_id)   = [(0 : length(list.(ch).fsi) - 1) + length(list.(ch).d1) + length(list.(ch).d2) ...
+                            ; list.(ch).fsi(:,2)']';
+                    else
+                        % No special considerations for D1 connections
+                        connections.cortex.(ch).(msn).(conn_id) = [0 : length(list.(ch).(msn)) - 1 ...
+                            ; list.(ch).(msn)(:,2)']';
+                    end                      
                 end
             end
 
