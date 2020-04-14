@@ -1,6 +1,5 @@
 #!/bin/bash
 #$ -t 1:100
-#$ -N Physical_1CH
 #$ -M d.r.buxton@sheffield.ac.uk
 #$ -m ea
 #$ -j y
