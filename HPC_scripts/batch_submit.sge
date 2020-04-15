@@ -12,11 +12,11 @@ export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
 cd $LISTS_DIR
 
 # TODO: Set batch variant field from input variable
-if [ -z ${1+x} ]; then
+if [ -z ${1} ]; then
 	echo "Error: No batch variable set"
 	exit 1
 else
-	if [ -z ${2+x} ]; then
+	if [ -z ${2} ]; then
 		echo "Iterating over single batch variable '${1}'"
 		# PUT HERE: SINGLE ITERATION CODE
 		i=${SGE_TASK_ID}
@@ -85,6 +85,7 @@ C="wCH"
 
 # Set unique trial identifier
 XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
+echo "Unique trial identifier:" ${XID}
 
 # Set unique per-simulation work and output directories
 export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
