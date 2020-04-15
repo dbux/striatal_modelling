@@ -2,13 +2,18 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-export RMEM="50G"
-export TIME="18:00:00"
+export RMEM="30G"
+export TIME="4:00:00"
 
 # Set model name and experiment number
 export MODEL="Physical_2CH"
 export STRIATUM="20.04.10_17.00_84900+849_2CH"
 export EXP_NO="0"
+
+# Set parallel job stride values
+export T_START="1"
+export T_STOP="10"
+export T_STRIDE="1"
 
 ####################
 
@@ -44,5 +49,5 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} varying over ${1} ${2}"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t 1:100:10 -N=${MODEL} batch_submit.sge ${1} ${2}
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N=${MODEL} batch_submit.sge ${1} ${2}
 

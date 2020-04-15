@@ -25,7 +25,7 @@ else
 		MID="0"
 		FID="0"
 		CID=${i}
-		# UID=${1}${i}
+		# XID=${1}${i}
 	else
 		# PUT HERE: DOUBLE ITERATION CODE
 		# Set MSN and FSI descriptor variants based on unique job ID
@@ -45,7 +45,7 @@ else
 	MID=${i}
 	FID=${j}
 	CID="50"
-	# UID=${1}${i}"_"${2}${j}
+	# XID=${1}${i}"_"${2}${j}
 fi
 	
 # # Set MSN and FSI descriptor variants based on unique job ID
@@ -60,19 +60,19 @@ fi
 #     j=$(echo "${j: -1}")
 # fi
 
-# # Create UID for each simulation (must match the naming pattern of connection lists)
+# # Create XID for each simulation (must match the naming pattern of connection lists)
 # if [ -z "$i" ]; then
-#     MSN_UID="bkMSN0"
+#     MSN_ID="bkMSN0"
 # else
-#     MSN_UID="bkMSN${i}"
+#     MSN_ID="bkMSN${i}"
 # fi
 #
 # if [ -z "$j" ]; then
-# 	FSI_UID="bkFSI0"
+# 	FSI_ID="bkFSI0"
 # else
-# 	FSI_UID="bkFSI${j}"
+# 	FSI_ID="bkFSI${j}"
 # fi
-# UID="${MSN_UID}_${FSI_UID}"
+# XID="${MSN_ID}_${FSI_ID}"
 
 # Get connection probability
 # CON_PROB=$(bc <<< "scale=1;1 - ${i} / 100")
@@ -84,11 +84,11 @@ F="bkFSI"
 C="wCH"
 
 # Set unique trial identifier
-UID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
+XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
 
 # Set unique per-simulation work and output directories
-export WORK_DIR="${WORK_ROOT}/${MODEL}/${UID}"
-export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${UID}"
+export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
+export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
 echo ""
 echo "Working directory is ${WORK_DIR}"
 echo "Output directory is ${OUTPUT_DIR}"
@@ -107,9 +107,9 @@ else
 	echo "WARNING! Output directory already exists, proceeding anyway"
 fi
 
-# For each connection list file containing trial UID
+# For each connection list file containing trial XID
 echo "Copying connection lists…"
-for file in $(find . -maxdepth 1 -name "*${UID}*"); do
+for file in $(find . -maxdepth 1 -name "*${XID}*"); do
 	# Remove initial ./
     FILE_FULL=$(echo $file | sed "s|^\./||")
 	
@@ -128,7 +128,7 @@ echo "Modifying model.xml…"
 ${SCRIPTS_DIR}/modify_connections.sh
 
 # Execute model on SGE
-echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${UID}…"
+echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
 cd ${S2B_DIR}
 export PATH=${PATH}:${HOME}/bin
 ${S2B_DIR}/convert_script_s2b -gs \

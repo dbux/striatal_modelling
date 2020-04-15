@@ -22,7 +22,7 @@ end
 % DEFINE ATTRIBUTES
 %
 % Physical striatum attributes
-attr.size        = 1000;    % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
+attr.size        = 400;    % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
 attr.min_dist    = 10;      % Minimum distance between neurons (μm)
 attr.centre_rad  = 75;      % Radius of central region free from edge effects (μm)
 attr.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)
@@ -40,8 +40,8 @@ flags.debug     = 0;        % Show detailed information during initialization?
 flags.progress  = 1;        % Show progress indicator? (Set to 0 for Iceberg)
 flags.save      = 1;        % Save connection lists to disk?
 flags.binary    = 1;        % Save binary versions of connection lists?
-flags.density   = 1;        % Create input lists for varying neural densities?
-flags.width     = 1;        % Create inputs lists for varying channel width?
+flags.density   = 0;        % Create input lists for varying neural densities?
+flags.width     = 0;        % Create inputs lists for varying channel width?
 
 % % % % % % % % % %
 % BEGIN
@@ -67,10 +67,10 @@ else
     if flags.density
         attr.ch_width = 100;
         % Iterate active neuron density
-        for i = 0:20:80
-            for j = 0:20:80
-                attr.bkg_msn = i;
-                attr.bkg_fsi = j;
+        for m = 0:20:80
+            for f = 0:20:80
+                attr.bkg_msn = m;
+                attr.bkg_fsi = f;
 
                 [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
             end
@@ -83,8 +83,8 @@ else
         attr.bkg_msn = 0;
         attr.bkg_fsi = 0;
         % Iterate channel width
-        for k = 10:10:100          
-            attr.ch_width = k;
+        for w = 10:10:100          
+            attr.ch_width = w;
             
             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
         end
@@ -619,6 +619,40 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
             E(c,:) = exp(-alpha(c) - beta(c) .* (1 - exp(-gamma(c) .* (d - delta(c)))) .* exp(eta(c) .* d));
         end
     end
+
+    function[output] = gen_conn_stats(conn, striatum, bool)
+        % The following code generates statistics similar to 
+        % Humphries, Wood & Gurney (2010), page 11, table 5. It operates as follows:
+
+        % x.dists = Get the distance (col 3) from the appropriate connection list
+        % for every neuron that is in the centre region. Convert the result from
+        % UINT to single to avoid problems.
+
+        % x.list = Get a list of all the times a neuron exists as either an
+        % afferent (col 1) or efferent (col 2) for all neurons in the centre region.
+        % E.g for MSNs - 1 MSN, will list every MSN in the centre region innervated
+        % by at least 1 other MSN (located anywhere), repeated by as many incoming
+        % MSN connections exist.
+
+        % x.members = As x.list but with duplicates removed
+        % x.numbers = Find out how many contacts exist for each neuron in x.members
+
+        % Boolean value indicates if starting or destination population is single
+
+        if bool
+            % For 1 x - multiple y
+            output.dists = single(conn(find(ismember(conn(:,1), striatum.linear_centre(:,1)))',3));
+            output.list = single(conn(find(ismember(conn(:,1), striatum.linear_centre(:,1)))',1));
+        else
+            % For multiple x - 1 y
+            output.dists = single(conn(find(ismember(conn(:,2), striatum.linear_centre(:,1)))',3));
+            output.list = single(conn(find(ismember(conn(:,2), striatum.linear_centre(:,1)))',2));
+        end
+
+        output.members = unique(output.list);
+        output.numbers = hist(output.list, output.members);
+        output.numbers = output.numbers(output.numbers ~= 0);
+    end
 end
 
 function[connections, list] = gen_phys_connlist(striatum, connections, attr, flags)
@@ -1030,6 +1064,53 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         list_name = [save_dir, '/list.mat'];   
         save(list_name, 'list');
     end
+    
+    function save_list(listpath, listfile, name, flags)
+        % Given a pathname, a connection list and name, this will save the
+        % connection list to a CSV and optionally convert it to binary format for
+        % direct import to SpineCreator
+
+        % Save connection list to CSV
+        filename = ['conn_', name.src, '_to_', name.dst, '_', name.syn];
+        fid = fopen([listpath, filename, '.csv'], 'w');
+
+        % With or without connection delays as appropriate
+        if size(listfile,2) == 3
+            fprintf(fid, '%d, %d, %1.1f\r\n', transpose(listfile));
+        elseif size(listfile,2) == 2
+            fprintf(fid, '%d, %d\r\n', transpose(listfile));
+        else
+            error('Incorrect number of columns in connection %s', filename);
+        end
+        fclose(fid);
+
+        % Export connection list as binary file if need
+        if flags.binary
+%             bin_convert(listfile, strcat(listpath, filename));
+            
+            filepath = strcat(listpath, filename);
+            
+            intArray = int32([listfile(1:end,1)' ; listfile(1:end,2)']');
+            if size(listfile, 2) == 3
+                floatArray = single(listfile(1:end,3));
+            end
+
+            fileID = fopen(strcat(filepath,'.bin'),'w');
+
+            if exist('floatArray', 'var')
+                for n = 1:size(listfile,1)
+                    fwrite(fileID, intArray(n,:), 'int32');
+                    fwrite(fileID, floatArray(n), 'single');
+                end
+            else
+                for n = 1:size(listfile,1)
+                    fwrite(fileID, intArray(n,:), 'int32');
+                end
+            end
+            fclose(fileID);
+        end
+    end
+    
 
     function export_striatum(s_data, s_name, s_dir)
         fields = fieldnames(s_data);

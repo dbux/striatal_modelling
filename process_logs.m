@@ -57,6 +57,7 @@ fprintf('done!\n')
 function attr = get_metadata(attr)
 
 % Log path depends on current machine:
+% TODO: Make this a switch/case
 % ShARC
 if exist('/fastdata/ac1drb', 'dir')
     attr.Striatum_path = strcat('/data/ac1drb/striatums/', attr.Striatum_ID, '/');
