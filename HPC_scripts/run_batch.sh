@@ -49,5 +49,5 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} varying over ${1} ${2}"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N=${MODEL} batch_submit.sge ${1} ${2}
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL} batch_submit.sge ${1} ${2}
 
