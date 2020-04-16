@@ -5,78 +5,40 @@
 #$ -o ~/logs/
 #$ -e ~/logs/
 
-# Set unique job ID based on SGE task ID
-export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
-
-# Model construction and execution loop
-cd $LISTS_DIR
-
-# TODO: Set batch variant field from input variable
+# Modify trial ID based in input variables
 if [ -z "${1}" ]; then
 	echo "Error: No batch variable set"
 	exit 1
-else
-	if [ -z "${2}" ]; then
-		echo "Iterating over single batch variable '${1}'"
-		# PUT HERE: SINGLE ITERATION CODE
-		i=${SGE_TASK_ID}
+elif [ -z "${2}" ]; then
+	echo "Iterating over single batch variable '${1}'"
+	i=${SGE_TASK_ID}
 		
-		# Default to 0 background MSN and FSIs
-		MID="0"
-		FID="0"
-		CID=${i}
-		# XID=${1}${i}
-	else
-		# PUT HERE: DOUBLE ITERATION CODE
-		# Set MSN and FSI descriptor variants based on unique job ID
-		# MSN descriptor from first digit, FSI descriptor from second digit
-		i=$(echo "scale=0; ${SGE_MOD_ID}/10" | bc)"0"
-		if (( ${i} == 00 )); then
-			i=$(echo "${i: -1}")
-		fi
-
-		j=$(echo "${SGE_MOD_ID: -1}0")
-		if (( ${j} == 00 )); then
-			j=$(echo "${j: -1}")
-		fi
+	# Default to 0 background MSN and FSIs
+	MID="0"
+	FID="0"
+	CID=${i}
+else
+	echo "Iterating batch variables '${1}' and '${2}'"
+	
+	# Set unique job ID based on SGE task ID
+	export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
+	# Set MSN and FSI descriptor variants based on unique job ID
+	# MSN descriptor from first digit, FSI descriptor from second digit
+	i=$(echo "scale=0; ${SGE_MOD_ID}/10" | bc)"0"
+	if (( ${i} == 00 )); then
+		i=$(echo "${i: -1}")
 	fi
 	
+	j=$(echo "${SGE_MOD_ID: -1}0")
+	if (( ${j} == 00 )); then
+		j=$(echo "${j: -1}")
+	fi
+		
 	# Default to 50% channel width
 	MID=${i}
 	FID=${j}
 	CID="50"
-	# XID=${1}${i}"_"${2}${j}
 fi
-	
-# # Set MSN and FSI descriptor variants based on unique job ID
-# # MSN descriptor from first digit, FSI descriptor from second digit
-# i=$(echo "scale=0; ${SGE_MOD_ID}/10" | bc)"0"
-# if (( ${i} == 00 )); then
-#     i=$(echo "${i: -1}")
-# fi
-#
-# j=$(echo "${SGE_MOD_ID: -1}0")
-# if (( ${j} == 00 )); then
-#     j=$(echo "${j: -1}")
-# fi
-
-# # Create XID for each simulation (must match the naming pattern of connection lists)
-# if [ -z "$i" ]; then
-#     MSN_ID="bkMSN0"
-# else
-#     MSN_ID="bkMSN${i}"
-# fi
-#
-# if [ -z "$j" ]; then
-# 	FSI_ID="bkFSI0"
-# else
-# 	FSI_ID="bkFSI${j}"
-# fi
-# XID="${MSN_ID}_${FSI_ID}"
-
-# Get connection probability
-# CON_PROB=$(bc <<< "scale=1;1 - ${i} / 100")
-
 
 # Define trial-specific descriptors
 M="bkMSN"
@@ -98,20 +60,23 @@ echo "Output directory is ${OUTPUT_DIR}"
 if [ ! -d ${WORK_DIR} ]; then
     mkdir -p ${WORK_DIR}
 else 
-	echo "WARNING! Working directory already exists, proceeding anyway"
+	echo "WARNING! Working directory already exists; proceeding anyway"
 fi
 
 # Create output directory
 if [ ! -d ${OUTPUT_DIR} ]; then
 	mkdir -p ${OUTPUT_DIR}
 else
-	echo "WARNING! Output directory already exists, proceeding anyway"
+	echo "WARNING! Output directory already exists; proceeding anyway"
 fi
 
-# For each connection list file containing trial XID
+# Model construction and execution loop
+cd $LISTS_DIR
+
+# For each connection list file containing trial XID…
 echo "Copying connection lists…"
 for file in $(find . -maxdepth 1 -name "*${XID}*"); do
-	# Remove initial ./
+	# Remove initial './'
     FILE_FULL=$(echo $file | sed "s|^\./||")
 	
 	# Remove trial-specific descriptors
@@ -124,12 +89,15 @@ done
 
 # Copy other model files to work directory
 cp -n ${MODEL_DIR}/* ${WORK_DIR}
+
 # Rewrite model connection lists
 echo "Modifying model.xml…"
 ${SCRIPTS_DIR}/modify_connections.sh
 
 # Execute model on SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
+echo ""
+
 cd ${S2B_DIR}
 export PATH=${PATH}:${HOME}/bin
 ${S2B_DIR}/convert_script_s2b -gs \

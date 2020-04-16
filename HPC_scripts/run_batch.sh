@@ -43,9 +43,9 @@ rm -rf ${OUTPUT_ROOT}
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
-# TODO: Add batch variables to pass through to script
-# bkMSN, bkFSI, wCH
-# TODO: Modify stride based on number of variables to vary
+# TODO: Sanity check on batch variables
+# TODO: Cleaner printout of batch variables
+# TODO: Update batch variable code to be less fragile, iterate over any two varaibles
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} varying over ${1} ${2}"
