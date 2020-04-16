@@ -3,7 +3,7 @@
 # Set HPC parameters
 export USER="ac1drb"
 export RMEM="30G"
-export TIME="4:00:00"
+export TIME="3:00:00"
 
 # Set model name and experiment number
 export MODEL="Physical_2CH"

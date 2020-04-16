@@ -71,19 +71,20 @@ else
 fi
 
 # Model construction and execution loop
-cd $LISTS_DIR
+cd ${LISTS_DIR}
 
 # For each connection list file containing trial XID…
 echo "Copying connection lists…"
-for file in $(find . -maxdepth 1 -name "*${XID}*"); do
+for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
 	# Remove initial './'
     FILE_FULL=$(echo $file | sed "s|^\./||")
 	
 	# Remove trial-specific descriptors
     # FILE_TRIM=$(echo $FILE_FULL | sed "s/_bkMSN[0-9]\+_bkFSI[0-9]\+//")
-	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${MID}[0-9]\+_${FID}[0-9]\+_${CID}[0-9]\+//")
+	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${M}[0-9]\+_${F}[0-9]\+_${C}[0-9]\+//")
 	
 	# Copy connection list to work directory with unique descriptors removed
+	echo "- "$file" to "${WORK_DIR}"/"${FILE_TRIM}
     cp $file ${WORK_DIR}/${FILE_TRIM}
 done
 
@@ -91,6 +92,7 @@ done
 cp -n ${MODEL_DIR}/* ${WORK_DIR}
 
 # Rewrite model connection lists
+echo ""
 echo "Modifying model.xml…"
 ${SCRIPTS_DIR}/modify_connections.sh
 
