@@ -15,7 +15,8 @@ elif [ -z "${2}" ]; then
 		
 	# Default to 0 background MSN and FSIs
 	MID="0"
-	FID="0"
+	#FID="0"
+	FID="100"
 	CID=${i}
 else
 	echo "Iterating batch variables '${1}' and '${2}'"
@@ -52,9 +53,8 @@ echo "Unique trial identifier:" ${XID}
 # Set unique per-simulation work and output directories
 export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
 export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
-echo ""
-echo "Working directory is ${WORK_DIR}"
-echo "Output directory is ${OUTPUT_DIR}"
+echo "Working directory: ${WORK_DIR}"
+echo "Output directory: ${OUTPUT_DIR}"
 
 # Check for directory existence
 if [ ! -d ${WORK_DIR} ]; then
@@ -74,6 +74,7 @@ fi
 cd ${LISTS_DIR}
 
 # For each connection list file containing trial XID…
+echo ""
 echo "Copying connection lists…"
 for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
 	# Remove initial './'
@@ -84,7 +85,7 @@ for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
 	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${M}[0-9]\+_${F}[0-9]\+_${C}[0-9]\+//")
 	
 	# Copy connection list to work directory with unique descriptors removed
-	echo "- "$file" to "${WORK_DIR}"/"${FILE_TRIM}
+	echo $file" → "${WORK_DIR}"/"${FILE_TRIM}
     cp $file ${WORK_DIR}/${FILE_TRIM}
 done
 
@@ -97,8 +98,8 @@ echo "Modifying model.xml…"
 ${SCRIPTS_DIR}/modify_connections.sh
 
 # Execute model on SGE
-echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
 echo ""
+echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
 
 cd ${S2B_DIR}
 export PATH=${PATH}:${HOME}/bin

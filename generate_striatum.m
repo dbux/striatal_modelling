@@ -1,26 +1,27 @@
 % Generates a 'physical' striatal microcircuit and associated connection 
 % lists based on Humphries, Wood & Gurney (2010)
 
+%% TODO LIST
+% Move functions into main code section if only used once
+% Consider speeding up generation by placing all neuons at once and performing distance checks later
+% Add more detailed header information to 3D neuron data export
+
+%% PREAMBLE
 % Reset initial state
 clear variables; clc
-timer.all = tic;
 rng('shuffle');
-warning('off', 'MATLAB:MKDIR:DirectoryExists');
-addpath(genpath('~/MatLab'));
 
-% Where to save striatum data files
-if ~exist('~/Documents', 'dir')
-    % HPC
-    attr.path = '/data/ac1drb/striatums/';
-else
-    % Local
-%     attr.path = '/Volumes/GoogleDrive/My Drive/1 - Projects/Striatal oscillations/Striatums/';
-    attr.path = '~/Documents/Striatums/';
-end
+% Add MATLAB path for HPC execution
+addpath(genpath('~/MatLab'));
+addpath(genpath('/home/ac1drb/MatLab'));
+
+timer.all = tic;
+warning('off', 'MATLAB:MKDIR:DirectoryExists');
+
+% Get path for saving striatum data files
+[attr.path, ~] = get_paths;
  
-% % % % % % % % % %
-% DEFINE ATTRIBUTES
-%
+%% CONFIGURATION
 % Physical striatum attributes
 attr.size        = 400;    % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
 attr.min_dist    = 10;      % Minimum distance between neurons (μm)
@@ -43,12 +44,8 @@ flags.binary    = 1;        % Save binary versions of connection lists?
 flags.density   = 0;        % Create input lists for varying neural densities?
 flags.width     = 0;        % Create inputs lists for varying channel width?
 
-% % % % % % % % % %
-% BEGIN
-%
+%% START
 % Sanity checks
-% if flags.phys_ch && attr.ch_all ~= 2
-%     error('Trying to partition a physical model without two channels')
 if attr.size > 1000
     error('Trying to create too large a striatum')
 elseif attr.bkg_msn > 100 || attr.bkg_fsi > 100
@@ -111,8 +108,7 @@ else
     fprintf('All connection lists generated in %1.2f hours. Job complete.\n', toc(timer.all) / 3600)
 end
 
-% % % % % % % % % %
-% FUNCTIONS
+%% FUNCTIONS
 function[striatum] = gen_phys_striatum(attr, flags)
     % Generates a model striatum with topology based on the description in
     % page 7 of Humphries, Wood & Gurney (2010)
