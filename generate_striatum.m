@@ -5,6 +5,7 @@
 % Move functions into main code section if only used once
 % Consider speeding up generation by placing all neuons at once and performing distance checks later
 % Add more detailed header information to 3D neuron data export
+% Allow generation of more connection lists for existing striatum
 
 %% PREAMBLE
 % Reset initial state
@@ -18,12 +19,15 @@ addpath(genpath('/home/ac1drb/MatLab'));
 timer.all = tic;
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
+% Optionally define an existing striatum to generate connection lists for
+s_ID = '20.04.10_17.00_84900+849_2CH';
+
 % Get path for saving striatum data files
 [attr.path, ~] = get_paths;
  
 %% CONFIGURATION
 % Physical striatum attributes
-attr.size        = 400;    % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
+attr.size        = 1000;    % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
 attr.min_dist    = 10;      % Minimum distance between neurons (μm)
 attr.centre_rad  = 75;      % Radius of central region free from edge effects (μm)
 attr.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)
@@ -42,7 +46,7 @@ flags.progress  = 1;        % Show progress indicator? (Set to 0 for Iceberg)
 flags.save      = 1;        % Save connection lists to disk?
 flags.binary    = 1;        % Save binary versions of connection lists?
 flags.density   = 0;        % Create input lists for varying neural densities?
-flags.width     = 0;        % Create inputs lists for varying channel width?
+flags.width     = 1;        % Create inputs lists for varying channel width?
 
 %% START
 % Sanity checks
@@ -53,11 +57,24 @@ elseif attr.bkg_msn > 100 || attr.bkg_fsi > 100
 elseif attr.ch_width > 100 || attr.ch_width == 0
     error('Invalid channel width')
 else
-    % Create striatum structure
-    striatum = gen_phys_striatum(attr, flags);
     
-    % Create intrastriatal connections
-    connections = gen_phys_connections(striatum, attr, flags);
+    if ~exist('s_ID', 'var')
+        % Create striatum structure
+        striatum = gen_phys_striatum(attr, flags);
+
+        % Create intrastriatal connections
+        connections = gen_phys_connections(striatum, attr, flags);
+    else
+        try
+            fprintf('Loading existing data for striatum ID %s… ', s_ID);
+            load(fullfile(attr.path, s_ID, 'striatum.mat'));
+            load(fullfile(attr.path, s_ID, 'connections.mat'))
+            fprintf('done!\n')
+        catch
+            fprintf('failed!\n');
+            error('Unable to load existing striatal data');
+        end
+    end
 
     % TODO: Tidy up this iteration, make more flexible for future changes
     % Create corticostriatal connections and output all connection lists
@@ -78,7 +95,8 @@ else
     
     if flags.width 
         attr.bkg_msn = 0;
-        attr.bkg_fsi = 0;
+%         attr.bkg_fsi = 0;
+        attr.bkg_fsi = 100;
         % Iterate channel width
         for w = 10:10:100          
             attr.ch_width = w;
@@ -98,7 +116,7 @@ else
     end
     
     if flags.save
-        save([striatum.dirname, '/connections.mat'], 'connections', '-v7.3');
+        save(fullfile(striatum.dirname, '/connections.mat'), 'connections', '-v7.3');
     end
     
     if flags.progress
@@ -187,10 +205,10 @@ function[striatum] = gen_phys_striatum(attr, flags)
     if flags.progress
         fprintf('Saving striatum data… ')
     end
-    striatum.dirname = [attr.path num2str(strinf.id) '_' ...
-        num2str(pop.msn) '+' num2str(pop.fsi) '_' num2str(attr.ch_all) 'CH/'];
+    striatum.dirname = fullfile(attr.path, num2str(strinf.id), '_', ...
+        num2str(pop.msn), '+', num2str(pop.fsi), '_', num2str(attr.ch_all), 'CH');
     mkdir(striatum.dirname);
-    filename = [striatum.dirname '/striatum.mat'];
+    filename = fullfile(striatum.dirname, 'striatum.mat');
     save(filename, 'striatum', 'strinf', 'attr');
     if flags.progress
         fprintf('took %1.2f seconds. Done!\n', toc(timer.save))
@@ -319,7 +337,7 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
 
     if flags.progress
         fprintf('\nCreating connections…')
-        fprintf('\n(!) For a full-size network (1mm³) creating connections may take 1-3 hours (!)')
+        fprintf('\nFor a full-size network (1mm³) this may take some time')
         fprintf('\nStart time: %s | ', datestr(now, 'HH:MM:SS'))
     %     fprintf('\nEstimated completion time: %1.2f - %1.2f minutes… ', (0.09*length(striatum.linear))/60, (0.15*length(striatum.linear))/60)
     end
@@ -655,7 +673,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     % Assign MSNs as D1 or D2 and to a particular channel
 
     % Append directory for connection lists
-    listpath = [striatum.dirname 'connection_lists/'];
+    listpath = fullfile(striatum.dirname, 'connection_lists/');
     mkdir(listpath);
 
     % Start list timer
