@@ -45,8 +45,8 @@ flags.debug     = 0;        % Show detailed information during initialization?
 flags.progress  = 1;        % Show progress indicator? (Set to 0 for Iceberg)
 flags.save      = 1;        % Save connection lists to disk?
 flags.binary    = 1;        % Save binary versions of connection lists?
-flags.density   = 0;        % Create input lists for varying neural densities?
-flags.width     = 1;        % Create inputs lists for varying channel width?
+flags.density   = 10;       % Vary neural density by this interval (0 for single list)
+flags.width     = 10;       % Vary channel with by this interval (0 for single list)
 
 %% START
 % Sanity checks
@@ -77,38 +77,59 @@ else
     end
 
     % TODO: Tidy up this iteration, make more flexible for future changes
+    
     % Create corticostriatal connections and output all connection lists
     if flags.density
-        attr.ch_width = 100;
-        % Iterate active neuron density
-        for m = 0:20:80
-            for f = 0:20:80
-                attr.bkg_msn = m;
+        
+        % Iterate active MSN density
+        for m = 0:flags.density:(100 - flags.density)
+            attr.bkg_msn = m;
+            
+            % Iterate active FSI density
+            for f = 0:flags.density:(100 - flags.density)               
                 attr.bkg_fsi = f;
-
-                [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+                
+                if flags.width
+                    % Iterate channel width
+                    for w = flags.width:flags.width:100
+                        attr.ch_width = w;     
+                        [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);                       
+                    end
+                else
+                    [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+                end
             end
         end
-        attr.bkg_msn = 0;
-        attr.bkg_fsi = 0;
-    end
-    
-    if flags.width 
-        attr.bkg_msn = 0;
-%         attr.bkg_fsi = 0;
-        attr.bkg_fsi = 100;
+        
+    elseif flags.width 
         % Iterate channel width
-        for w = 10:10:100          
-            attr.ch_width = w;
-            
+        for w = flags.width:flags.width:100          
+            attr.ch_width = w;           
             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
         end
-        attr.ch_width = 100;        
+        
+    else
+        % Create single connection list with provided attributes
+        [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);        
     end
+        
     
-    if ~(flags.density || flags.width)
-        [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
-    end
+%     if flags.width 
+%         attr.bkg_msn = 0;
+% %         attr.bkg_fsi = 0;
+%         attr.bkg_fsi = 100;
+%         % Iterate channel width
+%         for w = 10:10:100          
+%             attr.ch_width = w;
+%             
+%             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+%         end
+%         attr.ch_width = 100;        
+%     end
+%     
+%     if ~(flags.density || flags.width)
+%         [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+%     end
     
     % Save all connections to disk
     if flags.progress
@@ -325,15 +346,15 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
     msn = 1;                    % How neurons will be represented numerically            
     fsi = 3;
 
-    delay_mult = 0.02;      % Delay multiplier - multiply connection distances by this for delay value
-    delay_min = 0.1;        % Minimum delay (must be at least as large as SpineCreator timestep value)
-    r = rand;               % Use one random number for all delays so they are in relative proportion
+    delay_mult = 0.02;          % Delay multiplier - multiply connection distances by this for delay value
+    delay_min = 0.1;            % Minimum delay (must be at least as large as SpineCreator timestep value)
+    r = rand;                   % Use one random number for all delays so they are in relative proportion
 
     % Prellocate synaptic connection lists
     connections.msnmsn = zeros((1000*length(striatum.linear)),3);
     connections.fsimsn = zeros((1000*length(striatum.linear)),3);
     connections.fsifsi = zeros((1000*length(striatum.linear)),3);
-    connections.gap = [];       % Gap connection list does not need preallocation
+    connections.gap    = [];    % Gap connection list does not need preallocation
 
     if flags.progress
         fprintf('\nCreating connections…')
@@ -655,12 +676,12 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
 
         if bool
             % For 1 x - multiple y
-            output.dists = single(conn(find(ismember(conn(:,1), striatum.linear_centre(:,1)))',3));
-            output.list = single(conn(find(ismember(conn(:,1), striatum.linear_centre(:,1)))',1));
+            output.dists = single(conn(find(ismember(conn(:, 1), striatum.linear_centre(:, 1)))', 3));
+            output.list  = single(conn(find(ismember(conn(:, 1), striatum.linear_centre(:, 1)))', 1));
         else
             % For multiple x - 1 y
-            output.dists = single(conn(find(ismember(conn(:,2), striatum.linear_centre(:,1)))',3));
-            output.list = single(conn(find(ismember(conn(:,2), striatum.linear_centre(:,1)))',2));
+            output.dists = single(conn(find(ismember(conn(:, 2), striatum.linear_centre(:, 1)))', 3));
+            output.list  = single(conn(find(ismember(conn(:, 2), striatum.linear_centre(:, 1)))', 2));
         end
 
         output.members = unique(output.list);

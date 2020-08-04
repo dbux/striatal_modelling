@@ -21,8 +21,8 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 %% CONFIGURATION
 % Set basic parameters
 attr.Striatum_ID = '20.04.10_17.00_84900+849_2CH';
-attr.Experiment = 'Physical_2CH';
-attr.Channels = 2;
+attr.Experiment  = 'Physical_2CH';
+attr.Channels    = 2;
 
 % Striatum and log paths depend on current machine and experiment details
 attr.Striatum_path = fullfile(s_dir, attr.Striatum_ID);

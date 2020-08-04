@@ -11,7 +11,7 @@ else
 	FD="/fastdata-sharc/ac1drb"
 fi
 
-NOW=$(date +%y-%m-%d_%H-%M)
+NOW=$(date +%y.%m.%d_%H.%M)
 INPUT_DIR=${FD}/output/$LABEL/
 OUTPUT_DIR=${FD}
 
