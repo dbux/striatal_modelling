@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -l rmem=20G
+#$ -l rmem=60G
 #$ -l h_rt=48:00:00
 #$ -m beas
 #$ -M d.r.buxton@sheffield.ac.uk
