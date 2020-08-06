@@ -15,8 +15,8 @@ elif [ -z "${2}" ]; then
 		
 	# Default to 0 background MSN and FSIs
 	MID="0"
-	#FID="0"
-	FID="100"
+	FID="0"
+	# FID="100"
 	CID=${i}
 else
 	echo "Iterating batch variables '${1}' and '${2}'"

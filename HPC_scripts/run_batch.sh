@@ -11,9 +11,9 @@ export STRIATUM="20.04.10_17.00_84900+849_2CH"
 export EXP_NO="0"
 
 # Set parallel job stride values
-export T_START="10"
+export T_START="1"
 export T_STOP="100"
-export T_STRIDE="10"
+export T_STRIDE="1"
 
 ####################
 
