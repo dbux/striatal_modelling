@@ -38,7 +38,7 @@ else
 	# Default to 50% channel width
 	MID=${i}
 	FID=${j}
-	CID="50"
+	CID="10"
 fi
 
 # Define trial-specific descriptors
