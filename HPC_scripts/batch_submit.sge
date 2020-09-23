@@ -110,7 +110,11 @@ done
 
 
 # Set unique trial identifier
-XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
+if [ "${CHANNELS}" -gt 1 ]; then
+	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
+else
+	export XID=${M}${MID}"_"${F}${FID}
+fi
 echo "Unique trial identifier:" ${XID}
 
 # Set unique per-simulation work and output directories

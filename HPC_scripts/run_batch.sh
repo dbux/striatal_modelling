@@ -54,19 +54,19 @@ while getopts ":c:f:m:w:" opt; do
 		;;
 		f) 
 			VAR_FSI=${OPTARG}
-		  	if [ -z "${VAR_FSI}" ]
+		  	if [ -z "${VAR_FSI}" ]; then
 		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
 		  	fi
 		;;
 		m)
 			VAR_MSN=${OPTARG}
-		  	if [ -z "${VAR_MSN}" ]
+		  	if [ -z "${VAR_MSN}" ]; then
 		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
 		  	fi
 		;;
 		w) 
 			VAR_WCH=${OPTARG}
-		  	if [ -z "${VAR_WCH}" ]
+		  	if [ -z "${VAR_WCH}" ]; then
 		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
 		  	fi
 		;;
