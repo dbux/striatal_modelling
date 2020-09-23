@@ -20,7 +20,7 @@ timer.all = tic;
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
 % Optionally define an existing striatum to generate connection lists for
-s_ID = '20.04.10_17.00_84900+849_2CH';
+s_ID = '20.04.10_17.00_84900+849';
 
 % Get path for saving striatum data files
 [attr.path, ~] = get_paths;
@@ -33,34 +33,36 @@ attr.centre_rad  = 75;      % Radius of central region free from edge effects (�
 attr.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)
 attr.fsi_pct     = 1;       % Percentage of MSNs to be added as FSIs  
 
+% TODO: These should not be in the attr struct
 % Connectivity attributes
-attr.ch_all     = 2;        % Total number of channels (not including background)
-attr.ch_width   = 100;      % Percentage width of each channel in physical model (0 means no channel inputs).
-attr.bkg_msn    = 0;        % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
-attr.bkg_fsi    = 0;        % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
+conn.ch_all      = 2;        % Total number of channels (not including background)
+conn.ch_width    = 50;      % Percentage width of each channel in physical model (0 means no channel inputs).
+conn.bkg_msn     = 0;        % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
+conn.bkg_fsi     = 0;        % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
 
 % Process flags
-flags.phys_ch   = 1;        % Separate channels based on physical location? (TWO CHANNELS ONLY)
-flags.debug     = 0;        % Show detailed information during initialization?
-flags.progress  = 1;        % Show progress indicator? (Set to 0 for Iceberg)
-flags.save      = 1;        % Save connection lists to disk?
-flags.binary    = 1;        % Save binary versions of connection lists?
-flags.density   = 10;       % Vary neural density by this interval (0 for single list)
-flags.width     = 10;       % Vary channel with by this interval (0 for single list)
+flags.phys_ch    = 1;        % Separate channels based on physical location? (TWO CHANNELS ONLY)
+flags.debug      = 0;        % Show detailed information during initialization?
+flags.progress   = 1;        % Show progress indicator? (Set to 0 for Iceberg)
+flags.save       = 1;        % Save connection lists to disk?
+flags.binary     = 1;        % Save binary versions of connection lists?
+flags.density    = 20;        % Vary neural density by this interval (0 for single list)
+flags.width      = 20;        % Vary channel with by this interval (0 for single list)
+% flags.channel    = 1;        % Force generation of inputs for this many channels (0 for striatum default)
 
 %% START
 % Sanity checks
 if attr.size > 1000
     error('Trying to create too large a striatum')
-elseif attr.bkg_msn > 100 || attr.bkg_fsi > 100
+elseif conn.bkg_msn > 100 || conn.bkg_fsi > 100
     error('Trying to create too many background neurons')
-elseif attr.ch_width > 100 || attr.ch_width == 0
+elseif conn.ch_width > 100 || conn.ch_width == 0
     error('Invalid channel width')
 else
     
     if ~exist('s_ID', 'var')
         % Create striatum structure
-        striatum = gen_phys_striatum(attr, flags);
+        striatum = gen_phys_striatum(attr, conn, flags);
 
         % Create intrastriatal connections
         connections = gen_phys_connections(striatum, attr, flags);
@@ -74,6 +76,12 @@ else
             fprintf('failed!\n');
             error('Unable to load existing striatal data');
         end
+        
+%         if flags.channel
+%             conn.ch_all = flags.channel;
+%             % TEST ONLY
+%             conn.bkg_msn = 50;
+%         end
     end
 
     % TODO: Tidy up this iteration, make more flexible for future changes
@@ -83,20 +91,20 @@ else
         
         % Iterate active MSN density
         for m = 0:flags.density:(100 - flags.density)
-            attr.bkg_msn = m;
+            conn.bkg_msn = m;
             
             % Iterate active FSI density
             for f = 0:flags.density:(100 - flags.density)               
-                attr.bkg_fsi = f;
+                conn.bkg_fsi = f;
                 
-                if flags.width
+                if flags.width && conn.ch_all > 1
                     % Iterate channel width
                     for w = flags.width:flags.width:100
-                        attr.ch_width = w;     
-                        [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);                       
+                        conn.ch_width = w;     
+                        [connections, list] = gen_phys_connlist(striatum, connections, attr, conn, flags);                       
                     end
                 else
-                    [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+                    [connections, list] = gen_phys_connlist(striatum, connections, attr, conn, flags);
                 end
             end
         end
@@ -104,32 +112,14 @@ else
     elseif flags.width 
         % Iterate channel width
         for w = flags.width:flags.width:100          
-            attr.ch_width = w;           
-            [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
+            conn.ch_width = w;           
+            [connections, list] = gen_phys_connlist(striatum, connections, attr, conn, flags);
         end
         
     else
         % Create single connection list with provided attributes
-        [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);        
+        [connections, list] = gen_phys_connlist(striatum, connections, attr, conn, flags);        
     end
-        
-    
-%     if flags.width 
-%         attr.bkg_msn = 0;
-% %         attr.bkg_fsi = 0;
-%         attr.bkg_fsi = 100;
-%         % Iterate channel width
-%         for w = 10:10:100          
-%             attr.ch_width = w;
-%             
-%             [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
-%         end
-%         attr.ch_width = 100;        
-%     end
-%     
-%     if ~(flags.density || flags.width)
-%         [connections, list] = gen_phys_connlist(striatum, connections, attr, flags);
-%     end
     
     % Save all connections to disk
     if flags.progress
@@ -137,7 +127,7 @@ else
     end
     
     if flags.save
-        save(fullfile(striatum.dirname, '/connections.mat'), 'connections', '-v7.3');
+        save(fullfile(striatum.dirname, 'connections.mat'), 'connections', '-v7.3');
     end
     
     if flags.progress
@@ -148,7 +138,7 @@ else
 end
 
 %% FUNCTIONS
-function[striatum] = gen_phys_striatum(attr, flags)
+function[striatum] = gen_phys_striatum(attr, conn, flags)
     % Generates a model striatum with topology based on the description in
     % page 7 of Humphries, Wood & Gurney (2010)
     %
@@ -161,7 +151,7 @@ function[striatum] = gen_phys_striatum(attr, flags)
     reverseStr = '';                                                % Required string for progress indicator
 
     pop.msn = floor(round(attr.size^3 * attr.msn_density) / 1e9);   % Number of MSNs to place
-    while mod((pop.msn/2), attr.ch_all) ~= 0                        % Ensure the number of MSNs will fit nicely into the number of channels
+    while mod((pop.msn/2), conn.ch_all) ~= 0                        % Ensure the number of MSNs will fit nicely into the number of channels
         pop.msn = pop.msn + 1;
     end
 
@@ -175,7 +165,7 @@ function[striatum] = gen_phys_striatum(attr, flags)
 
     % Preallocate striatal array - initialize as uint8 to save memory and time
     % Striatal centre arrays small enough to not require preallocation
-    striatum.main = zeros(attr.size,attr.size,attr.size, 'uint16');
+    striatum.main = zeros(attr.size, attr.size, attr.size, 'uint16');
     striatum.linear = zeros(pop.max,1, 'uint8');
     striatum.linear_centre = [];
     striatum.neurons = zeros(pop.max,3, 'uint16');
@@ -226,8 +216,7 @@ function[striatum] = gen_phys_striatum(attr, flags)
     if flags.progress
         fprintf('Saving striatum data… ')
     end
-    striatum.dirname = fullfile(attr.path, num2str(strinf.id), '_', ...
-        num2str(pop.msn), '+', num2str(pop.fsi), '_', num2str(attr.ch_all), 'CH');
+    striatum.dirname = fullfile(attr.path, [num2str(strinf.id), '_', num2str(pop.msn), '+', num2str(pop.fsi)]);
     mkdir(striatum.dirname);
     filename = fullfile(striatum.dirname, 'striatum.mat');
     save(filename, 'striatum', 'strinf', 'attr');
@@ -690,11 +679,11 @@ function[connections] = gen_phys_connections(striatum, attr, flags)
     end
 end
 
-function[connections, list] = gen_phys_connlist(striatum, connections, attr, flags)
+function[connections, list] = gen_phys_connlist(striatum, connections, attr, conn, flags)
     % Assign MSNs as D1 or D2 and to a particular channel
 
     % Append directory for connection lists
-    listpath = fullfile(striatum.dirname, 'connection_lists/');
+    listpath = fullfile(striatum.dirname, 'connection_lists');
     mkdir(listpath);
 
     % Start list timer
@@ -704,8 +693,8 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     % Column 1 is the unique neuron ID in the striatum generated by MatLab
     % Column 2 is the neuron's ID within that group required by SpineCreator
     list.msn = unique(connections.msnmsn(:,1));
-    list.d1 = [list.msn(1 : ceil(length(list.msn) / 2))' ; 0 : ceil(length(list.msn) / 2) - 1]';
-    list.d2 = [list.msn(length(list.d1) + 1 : end)' ; 0 : floor(length(list.msn) / 2) - 1]';
+    list.d1  = [list.msn(1 : ceil(length(list.msn) / 2))' ; 0 : ceil(length(list.msn) / 2) - 1]';
+    list.d2  = [list.msn(length(list.d1) + 1 : end)' ; 0 : floor(length(list.msn) / 2) - 1]';
     list.fsi = sort(unique([unique(connections.fsifsi(:,1)) ; unique(connections.fsimsn(:,1))]));
     list.fsi(:,2) = 0:length(list.fsi) - 1;
 
@@ -727,26 +716,26 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     if flags.progress
         fprintf('done! (%3.2fs)\n', toc(timer.chans))
         fprintf('(%d%% MSNs and %d%% FSIs background-only; %s%% channel width)\n', ...
-            attr.bkg_msn, attr.bkg_fsi, num2str(attr.ch_width))
+            conn.bkg_msn, conn.bkg_fsi, num2str(conn.ch_width))
     end
 
     % It's useful to know how many of each neuron type there are
-    num.d1 = size(list.d1, 1);
-    num.d2 = size(list.d2, 1);
+    num.d1  = size(list.d1, 1);
+    num.d2  = size(list.d2, 1);
     num.msn = size(list.msn, 1);
     num.fsi = size(list.fsi, 1);
     num.gap = size(connections.gap, 1);
 
     % (Approximate) number of MSNs of each type to leave as background only
-    num.bkg_msn = round(num.msn * (attr.bkg_msn / 100) / 2);
+    num.bkg_msn = round(num.msn * (conn.bkg_msn / 100) / 2);
 
     % (Approximate) number of FSIs to leave as background only
-    num.bkg_fsi = round(num.fsi * (attr.bkg_fsi / 100));
+    num.bkg_fsi = round(num.fsi * (conn.bkg_fsi / 100));
 
     % Number of MSNs of each type and FSIs to put in each channel
-    % num.msn_ch = floor((num.msn / 2 - num.bkg) / attr.ch_all);
-    num.d1_ch = (num.d1 - num.bkg_msn) / attr.ch_all;
-    num.d2_ch = (num.d2 - num.bkg_msn) / attr.ch_all;
+    % num.msn_ch = floor((num.msn / 2 - num.bkg) / conn.ch_all);
+    num.d1_ch  = (num.d1 - num.bkg_msn) / conn.ch_all;
+    num.d2_ch  = (num.d2 - num.bkg_msn) / conn.ch_all;
     num.fsi_ch = num.fsi - num.bkg_fsi;
 
     %% CORTICO-STRIATAL channel connections - Uses SpineCreator neuron IDs
@@ -755,14 +744,14 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         fprintf('1) Cortical channel connections… ')
     end
     timer.conn1 = tic;
-            
-    % Create connection ID for current background / channel width profile
-    % Must convert attr.ch_width to string to avoid floating-point errors
-    % Must do string substitution becuase struct fields cannot contain '.'
-    conn_id = sprintf('bkMSN%d_bkFSI%d_wCH%s', attr.bkg_msn, attr.bkg_fsi, num2str(attr.ch_width));
 
     % Cortico-striatal connections differ based on number of input channels
-    if attr.ch_all == 1
+    if conn.ch_all == 1
+        % Create connection ID for current background / channel width profile
+        % Must convert conn.ch_width to string to avoid floating-point errors
+        % Must do string substitution becuase struct fields cannot contain '.'
+        conn_id = sprintf('bkMSN%d_bkFSI%d_1CH', conn.bkg_msn, conn.bkg_fsi);
+    
         % In the single-channel model it doesn't matter which neurons don't
         % receive connections since neuron ID is not associated with location
 
@@ -782,18 +771,25 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                 for k = 0:1          
                     % Channel input
 
-                    name.syn = [sprintf('syn%d_', k), conn_id];
-                    save_list(listpath, connections.cortex.ch1.(d_dst).(conn_id), name, flags);
+%                     name.syn = [sprintf('syn%d_', k), conn_id];
+                    name.syn = sprintf('syn%d', k);
+                    save_list(fullfile(listpath, conn_id), connections.cortex.ch1.(d_dst).(conn_id), name, flags);
                 end
             end
 
             % FSI populations only use a single synapse
             name.dst = 'Striatum_FSI';
-            name.syn = ['syn0_', conn_id];
-            save_list(listpath, connections.cortex.ch1.fsi.(conn_id), name, flags);
+%             name.syn = ['syn0_', conn_id];
+            name.syn = 'syn0';
+            save_list(fullfile(listpath, conn_id), connections.cortex.ch1.fsi.(conn_id), name, flags);
         end
 
-    elseif attr.ch_all == 2
+    elseif conn.ch_all == 2
+        % Create connection ID for current background / channel width profile
+        % Must convert conn.ch_width to string to avoid floating-point errors
+        % Must do string substitution becuase struct fields cannot contain '.'
+        conn_id = sprintf('bkMSN%d_bkFSI%d_wCH%d_2CH', conn.bkg_msn, conn.bkg_fsi, conn.ch_width);
+    
         % Physically partition a two-channel striatum
         if flags.phys_ch  
             for i = 1:2
@@ -804,18 +800,18 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                 % striatal X-axis, modified based on width value. Width <0.5
                 % creates a background-only gap between channels, width
                 % >0.5 creates a region with MSNs in both channels   
-%                 list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= (attr.size / 2) + (attr.size * (attr.ch_width / 100) / 2), :);
-%                 list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= (attr.size / 2) - (attr.size * (attr.ch_width / 100) / 2), :); 
-                list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= 0 + (attr.size * (attr.ch_width / 100)), :);
-                list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= attr.size - (attr.size * (attr.ch_width / 100)), :);
+%                 list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= (attr.size / 2) + (attr.size * (conn.ch_width / 100) / 2), :);
+%                 list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= (attr.size / 2) - (attr.size * (conn.ch_width / 100) / 2), :); 
+                list.ch1.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) <= 0 + (attr.size * (conn.ch_width / 100)), :);
+                list.ch2.(msn) = list.(msn)(striatum.neurons(list.(msn)(:,1), 1) >= attr.size - (attr.size * (conn.ch_width / 100)), :);
 
-                for j = 1:attr.ch_all
+                for j = 1:conn.ch_all
                     % Set dynamic structure fieldname
                     ch = sprintf('ch%d', j);
 
                     % Trim MSN and FSI lists according to requested background-only percentage
-                    list.(ch).(msn) = list.(ch).(msn)(1:end - (floor(size(list.(ch).(msn), 1) * (attr.bkg_msn / 100))), :);
-                    list.(ch).fsi   = list.fsi(1:end - (floor(size(list.fsi, 1) * (attr.bkg_fsi / 100))), :);
+                    list.(ch).(msn) = list.(ch).(msn)(1:end - (floor(size(list.(ch).(msn), 1) * (conn.bkg_msn / 100))), :);
+                    list.(ch).fsi   = list.fsi(1:end - (floor(size(list.fsi, 1) * (conn.bkg_fsi / 100))), :);
 
                     % Channel connections to striatum
                     % FROM:  Each cortical channel (-1 for SpineCreator 0-indexing)
@@ -823,16 +819,16 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                     % DELAY: N/A                  
                     if i==2
                         % D2 connections come after D1 connections
-                        connections.cortex.(ch).(msn).(conn_id) = [(0 : length(list.(ch).(msn)) - 1) + length(list.(ch).d1) ...
-                            ; list.(ch).(msn)(:,2)']';
+                        connections.cortex.(ch).(msn).(conn_id) = ...
+                            [(0 : length(list.(ch).(msn)) - 1) + length(list.(ch).d1) ; list.(ch).(msn)(:,2)']';
                         
                         % FSI connections come after all MSN connections
-                        connections.cortex.(ch).fsi.(conn_id)   = [(0 : length(list.(ch).fsi) - 1) + length(list.(ch).d1) + length(list.(ch).d2) ...
-                            ; list.(ch).fsi(:,2)']';
+                        connections.cortex.(ch).fsi.(conn_id) = ...
+                            [(0 : length(list.(ch).fsi) - 1) + length(list.(ch).d1) + length(list.(ch).d2) ; list.(ch).fsi(:,2)']';
                     else
                         % No special considerations for D1 connections
-                        connections.cortex.(ch).(msn).(conn_id) = [0 : length(list.(ch).(msn)) - 1 ...
-                            ; list.(ch).(msn)(:,2)']';
+                        connections.cortex.(ch).(msn).(conn_id) = ...
+                            [0 : length(list.(ch).(msn)) - 1 ; list.(ch).(msn)(:,2)']';
                     end                      
                 end
             end
@@ -844,7 +840,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     %         ch_first = 1;
     %         ch_last = num.msn_ch;
     % 
-    %         for i = 1:attr.ch_all
+    %         for i = 1:conn.ch_all
     %             % Set dynamic structure fieldname
     %             ch = sprintf('ch%d', i);
     % 
@@ -878,7 +874,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
 
         % Save connection lists
         if flags.save
-            for i = 1:attr.ch_all
+            for i = 1:conn.ch_all
                 % Set dynamic structure fieldname
                 ch = sprintf('ch%d', i);       
                 name.src = sprintf('CH%d_input', i);
@@ -890,19 +886,20 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
 
                     % Create both AMPA and NMDA connections to MSNs
                     for k = 0:1
-                        name.syn = [sprintf('syn%d_', k), conn_id];                
-                        save_list(listpath, connections.cortex.(ch).(d_dst).(conn_id), name, flags);
+%                         name.syn = [sprintf('syn%d_', k), conn_id];  
+                        name.syn = sprintf('syn%d', k); 
+                        save_list(fullfile(listpath, conn_id), connections.cortex.(ch).(d_dst).(conn_id), name, flags);
                     end
                 end
 
                 % FSIs only use a single synapse
                 name.dst = 'Striatum_FSI';
-                name.syn = ['syn0_', conn_id];
-                save_list(listpath, connections.cortex.(ch).fsi.(conn_id), name, flags);
+                name.syn = 'syn0';
+                save_list(fullfile(listpath, conn_id), connections.cortex.(ch).fsi.(conn_id), name, flags);
             end
         end
 
-    elseif attr.ch_all > 2
+    elseif conn.ch_all > 2
         fprintf('3+ channel connectivity not yet done')
     end
 
@@ -932,7 +929,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
             name.dst = sprintf('Striatum_D%d', j);
 
             % If connections already exist, don't recreate
-            if ~exist(sprintf([listpath, 'conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file')        
+            if ~exist(fullfile(listpath, ['conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file')        
                 % Convert MatLab neuron IDs to SpineCreator IDs
                 [~, src] = ismember(connections.(d_src).(d_dst)(:,1), list.(d_src)(:,1));
                 [~, dst] = ismember(connections.(d_src).(d_dst)(:,2), list.(d_dst)(:,1));
@@ -957,7 +954,8 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         name.dst = sprintf('Striatum_D%d', i);
 
         % If connections already exist, don't recreate
-        if ~exist(sprintf([listpath, 'conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
+%         if ~exist(sprintf([listpath, 'conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
+        if ~exist(fullfile(listpath, ['conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
             % Convert MatLab neuron IDs to SpineCreator IDs
             [~, src] = ismember(connections.fsi.(f_dst)(:,1), list.fsi(:,1));
             [~, dst] = ismember(connections.fsi.(f_dst)(:,2), list.(f_dst)(:,1));
@@ -981,7 +979,8 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
     name.syn = 'syn0'; 
 
     % If connections already exist, don't recreate
-    if ~exist(sprintf([listpath, 'conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
+%     if ~exist(sprintf([listpath, 'conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
+    if ~exist(fullfile(listpath, ['conn_', name.src, '_to_', name.dst, '_', name.syn, '.csv']), 'file') 
         % Convert MatLab neuron IDs to SpineCreator IDs
         [~, src] = ismember(connections.fsifsi(:,1), list.fsi(:,1));
         [~, dst] = ismember(connections.fsifsi(:,2), list.fsi(:,1));
@@ -1060,7 +1059,7 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         striatum.msn.active.d1 = [];
         striatum.msn.active.d2 = [];
 
-        for i = 1:attr.ch_all
+        for i = 1:conn.ch_all
             % Set dynamic structure fieldname
             ch = sprintf('ch%d', i);
 
@@ -1089,14 +1088,17 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         striatum.fsi.inactive     = striatum.fsi.all(~ismember(striatum.fsi.all, striatum.fsi.active, 'rows'), :);
 
         % Export co-ordinates of all MSNs and FSIs
-        save_dir = [striatum.dirname, 'neuron_data/', strrep(conn_id, 'CH0_', 'CH0.')];
-        mkdir(save_dir);
+%         save_dir = [striatum.dirname, 'neuron_data/', strrep(conn_id, 'CH0_', 'CH0.')];
+        save_dir = fullfile(striatum.dirname, 'neuron_data', conn_id);
+        if ~exist(save_dir, 'dir')
+            mkdir(save_dir);
+        end
         
         export_striatum(striatum.msn, 'striatum.msn', save_dir)
         export_striatum(striatum.fsi, 'striatum.fsi', save_dir)
         
         % Save list of neurons
-        list_name = [save_dir, '/list.mat'];   
+        list_name = fullfile(save_dir, 'list.mat');   
         save(list_name, 'list');
     end
     
@@ -1104,10 +1106,14 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         % Given a pathname, a connection list and name, this will save the
         % connection list to a CSV and optionally convert it to binary format for
         % direct import to SpineCreator
+        
+        if ~exist(listpath, 'dir')
+            mkdir(listpath)
+        end
 
         % Save connection list to CSV
         filename = ['conn_', name.src, '_to_', name.dst, '_', name.syn];
-        fid = fopen([listpath, filename, '.csv'], 'w');
+        fid = fopen([fullfile(listpath, filename), '.csv'], 'w');
 
         % With or without connection delays as appropriate
         if size(listfile,2) == 3
@@ -1123,14 +1129,14 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
         if flags.binary
 %             bin_convert(listfile, strcat(listpath, filename));
             
-            filepath = strcat(listpath, filename);
+            filepath = fullfile(listpath, filename);
             
             intArray = int32([listfile(1:end,1)' ; listfile(1:end,2)']');
             if size(listfile, 2) == 3
                 floatArray = single(listfile(1:end,3));
             end
 
-            fileID = fopen(strcat(filepath,'.bin'),'w');
+            fileID = fopen([filepath, '.bin'], 'w');
 
             if exist('floatArray', 'var')
                 for n = 1:size(listfile,1)
@@ -1160,9 +1166,8 @@ function[connections, list] = gen_phys_connlist(striatum, connections, attr, fla
                 export_striatum(s_field, curr_name, s_dir);
             else
                 % Export current co-ordinate matrix to disk
-                cell2csv([s_dir, '/', curr_name, '.csv'], ...
-                    [{[curr_name, '_X'], [curr_name, '_Y'], [curr_name, '_Z']} ; ...
-                    num2cell(s_field)]);
+                cell2csv([fullfile(s_dir, curr_name), '.csv'], ...
+                    [{[curr_name, '_X'], [curr_name, '_Y'], [curr_name, '_Z']} ; num2cell(s_field)]);
             end
         end   
     end

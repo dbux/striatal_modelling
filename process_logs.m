@@ -155,13 +155,13 @@ for i = 1:size(attr.Logs, 2)
             ch);
 
         % Spikes
-        avg = strcat(header, '_sp_mean');
-        tot = strcat(header, '_sp_total');       
-        rol = strcat(header, sprintf('_sp_roll_%dms', bw));
+        avg = strcat(header, '_SPmean');
+        tot = strcat(header, '_SPtotal');       
+        rol = strcat(header, sprintf('_SProll_%dms', bw));
         
         % Oscillations
-        spc = strcat(header, '_os_spec');
-        frq = strcat(header, '_os_freq');
+        spc = strcat(header, '_OSspec');
+        frq = strcat(header, '_OSfreq');
         
         %% SPIKE ANALYSIS
         fprintf('Spikes… ')
@@ -192,6 +192,9 @@ for i = 1:size(attr.Logs, 2)
             results.Oscillations.(frq), ...
             ~...
         ] = mtspectrumpt(trm_s, params);
+    
+        % Calibrate spectral power to be accurate per *active* neuron
+        results.Oscillations.(spc) = results.Oscillations.(spc) / attr.Logs(i).Neurons_active ^ 2;
                      
         % Frequencies output must be transposed
         results.Oscillations.(frq) = results.Oscillations.(frq)';
