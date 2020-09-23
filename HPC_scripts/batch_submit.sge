@@ -11,12 +11,17 @@ export F="bkFSI"
 export C="wCH"
 
 # Set defaults
-export CHANNELS=1
-export VAR_FSI=0
-export VAR_MSN=0
-export VAR_WCH=0
-export NUM_VAR=5
-export EXP_VAR=0
+export CHANNELS="1"
+export VAR_FSI="0"
+export VAR_MSN="0"
+export VAR_WCH="0"
+export NUM_VAR="5"
+export EXP_VAR="0"
+
+# Default to 50% channel width
+export MID="0"
+export FID="0"
+export CID="50"
 
 # Calculate the multiplier for each variable
 function get_id {
@@ -68,46 +73,6 @@ while getopts ":c:f:m:w:" opt; do
 		;;
 	esac
 done
-
-
-
-
-#
-# # Modify trial ID based in input variables
-# if [ -z "${1}" ]; then
-# 	echo "Error: No batch variable set"
-# 	exit 1
-# elif [ -z "${2}" ]; then
-# 	echo "Iterating over single batch variable '${1}'"
-# 	i=${SGE_TASK_ID}
-#
-# 	# Default to 0 background MSN and FSIs
-# 	MID="0"
-# 	FID="0"
-# 	CID=${i}
-# else
-# 	echo "Iterating batch variables '${1}' and '${2}'"
-#
-# 	# Set unique job ID based on SGE task ID
-# 	export SGE_MOD_ID=$(echo "${SGE_TASK_ID} - 1" | bc)
-# 	# Set MSN and FSI descriptor variants based on unique job ID
-# 	# MSN descriptor from first digit, FSI descriptor from second digit
-# 	i=$(echo "scale=0; ${SGE_MOD_ID}/10" | bc)"0"
-# 	if (( ${i} == 00 )); then
-# 		i=$(echo "${i: -1}")
-# 	fi
-#
-# 	j=$(echo "${SGE_MOD_ID: -1}0")
-# 	if (( ${j} == 00 )); then
-# 		j=$(echo "${j: -1}")
-# 	fi
-#
-# 	# Default to 50% channel width
-# 	MID=${i}
-# 	FID=${j}
-# 	CID="50"
-# fi
-
 
 # Set unique trial identifier
 if [ "${CHANNELS}" -gt 1 ]; then
