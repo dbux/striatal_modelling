@@ -39,7 +39,7 @@ while getopts ":c:f:m:w:" opt; do
 		;;
 		f) 
 			VAR_FSI=${OPTARG}
-		  	if [ "${VAR_FSI}" -ne 0 ]
+		  	if [ "${VAR_FSI}" -ne 0 ]; then
 				get_id
 
 				export FID=`echo "${ID} * 20" | bc`			
@@ -48,7 +48,7 @@ while getopts ":c:f:m:w:" opt; do
 		;;
 		m)
 			VAR_MSN=${OPTARG}
-		  	if [ "${VAR_MSN}" -ne 0 ]
+		  	if [ "${VAR_MSN}" -ne 0 ]; then
 				get_id
 			
 				export MID=`echo "${ID} * 20" | bc`		  		
