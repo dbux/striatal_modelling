@@ -100,20 +100,23 @@ fi
 cd ${LISTS_DIR}
 echo ""
 echo "Copying connection lists…"
+cp conn_* ${WORK_DIR}
+cd ${XID}
+cp conn_* ${WORK_DIR}
 
-# For each connection list file containing trial XID…
-for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
-	# Remove initial './'
-    FILE_FULL=$(echo $file | sed "s|^\./||")
-	
-	# Remove trial-specific descriptors
-    # FILE_TRIM=$(echo $FILE_FULL | sed "s/_bkMSN[0-9]\+_bkFSI[0-9]\+//")
-	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${M}[0-9]\+_${F}[0-9]\+_${C}[0-9]\+//")
-	
-	# Copy connection list to work directory with unique descriptors removed
-	echo $file" → "${WORK_DIR}"/"${FILE_TRIM}
-    cp $file ${WORK_DIR}/${FILE_TRIM}
-done
+# # For each connection list file containing trial XID…
+# for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
+# 	# Remove initial './'
+#     FILE_FULL=$(echo $file | sed "s|^\./||")
+#
+# 	# Remove trial-specific descriptors
+#     # FILE_TRIM=$(echo $FILE_FULL | sed "s/_bkMSN[0-9]\+_bkFSI[0-9]\+//")
+# 	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${M}[0-9]\+_${F}[0-9]\+_${C}[0-9]\+//")
+#
+# 	# Copy connection list to work directory with unique descriptors removed
+# 	echo $file" → "${WORK_DIR}"/"${FILE_TRIM}
+#     cp $file ${WORK_DIR}/${FILE_TRIM}
+# done
 
 # Copy other model files to work directory
 cp -n ${MODEL_DIR}/* ${WORK_DIR}
