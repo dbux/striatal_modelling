@@ -37,6 +37,44 @@ function get_id {
 	export EXP_VAR=`echo ${EXP_VAR} + 1 | bc`
 }
 
+# Modify model.xml to include the correct number of connections
+function modify_connections {
+	# Go to simulation working directory
+	cd ${WORK_DIR}
+
+	# Check for existence of model.xml                                                            
+	if [ ! -e model.xml ]; then                                                
+		echo "No model.xml found in $(pwd); aborting."
+	else
+		echo "In ${WORK_DIR}:"
+	
+		# For every .bin file
+		for file in *.bin; do
+			# Break out of the loop if no .bin files exist                                            
+			[ -f "$file" ] || break 			
+			echo "••• ${file} found…"  
+				
+			# Get name of file without extension		                                            
+			FILE_CSV=$(basename $file .bin).csv
+
+			# If a corresponding CSV exists
+			if [ -f ${FILE_CSV} ]; then  
+				# Get the number of CSV rows                                                
+				CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})                  
+
+				# Construct the string occurring immediately before the number of connections
+				STR_MATCH=${file}'" num_connections="'
+
+				# Correct the number of connections in model.xml                         
+				sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml   				 
+				echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
+			else
+				echo "(!) ${FILE_CSV} not found"                                
+			fi
+		done
+	fi
+}
+
 # Set variation flags and number of channels
 while getopts ":c:f:m:w:" opt; do
 	case $opt in
@@ -97,12 +135,15 @@ else
 fi
 
 # Model construction and execution loop
-cd ${LISTS_DIR}
+# cd ${LISTS_DIR}
 echo ""
 echo "Copying connection lists…"
-cp conn_* ${WORK_DIR}
-cd ${XID}
-cp conn_* ${WORK_DIR}
+cp ${LISTS_DIR}/conn_* 			${WORK_DIR}
+cp ${LISTS_DIR}/${XID}/conn_* 	${WORK_DIR}
+# # TODO: Tidy this up
+# cp conn_* ${WORK_DIR}
+# cd ${XID}
+# cp conn_* ${WORK_DIR}
 
 # # For each connection list file containing trial XID…
 # for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
@@ -124,7 +165,41 @@ cp -n ${MODEL_DIR}/* ${WORK_DIR}
 # Rewrite model connection lists
 echo ""
 echo "Modifying model.xml…"
-${SCRIPTS_DIR}/modify_connections.sh
+# ${SCRIPTS_DIR}/modify_connections.sh
+# Go to simulation working directory
+cd ${WORK_DIR}
+
+# Check for existence of model.xml                                                            
+if [ ! -e model.xml ]; then                                                
+	echo "No model.xml found in $(pwd); aborting."
+else
+	echo "In ${WORK_DIR}:"
+
+	# For every .bin file
+	for file in *.bin; do
+		# Break out of the loop if no .bin files exist                                            
+		[ -f "$file" ] || break 			
+		echo "••• ${file} found…"  
+			
+		# Get name of file without extension		                                            
+		FILE_CSV=$(basename $file .bin).csv
+
+		# If a corresponding CSV exists
+		if [ -f ${FILE_CSV} ]; then  
+			# Get the number of CSV rows                                                
+			CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})                  
+
+			# Construct the string occurring immediately before the number of connections
+			STR_MATCH=${file}'" num_connections="'
+
+			# Correct the number of connections in model.xml                         
+			sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml   				 
+			echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
+		else
+			echo "(!) ${FILE_CSV} not found"                                
+		fi
+	done
+fi	
 
 # Execute model on SGE
 echo ""
