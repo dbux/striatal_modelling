@@ -47,7 +47,7 @@ flags.progress   = 1;        % Show progress indicator? (Set to 0 for Iceberg)
 flags.save       = 1;        % Save connection lists to disk?
 flags.binary     = 1;        % Save binary versions of connection lists?
 flags.density    = 20;        % Vary neural density by this interval (0 for single list)
-flags.width      = 20;        % Vary channel with by this interval (0 for single list)
+flags.width      = 0;        % Vary channel with by this interval (0 for single list)
 % flags.channel    = 1;        % Force generation of inputs for this many channels (0 for striatum default)
 
 %% START

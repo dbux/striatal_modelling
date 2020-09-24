@@ -18,7 +18,7 @@ export VAR_WCH="0"
 export NUM_VAR="5"
 export EXP_VAR="0"
 
-# Default to 50% channel width
+# Default to 0% background and 50% channel width
 export MID="0"
 export FID="0"
 export CID="50"
@@ -46,27 +46,21 @@ while getopts ":c:f:m:w:" opt; do
 			VAR_FSI=${OPTARG}
 		  	if [ "${VAR_FSI}" -ne 0 ]; then
 				get_id
-
 				export FID=`echo "${ID} * 20" | bc`			
-		  		printf "Background FSIs at ${FID}"
 		  	fi
 		;;
 		m)
 			VAR_MSN=${OPTARG}
 		  	if [ "${VAR_MSN}" -ne 0 ]; then
-				get_id
-			
+				get_id			
 				export MID=`echo "${ID} * 20" | bc`		  		
-				printf "Background MSNs at ${MID}"
 		  	fi
 		;;
 		w)
 			VAR_WCH=${OPTARG}
 		  	if [[ ("${VAR_WCH}" -ne 0 && "${CHANNELS}" -gt 1) ]]; then
-				get_id
-			
+				get_id			
 				export CID=`echo "(${ID} + 1) * 20" | bc`		  		
-				printf "Channel width at ${CID}"
 		  	fi
 		;;
 		\?) echo "Invalid option -${OPTARG}" >&2
@@ -104,10 +98,10 @@ fi
 
 # Model construction and execution loop
 cd ${LISTS_DIR}
-
-# For each connection list file containing trial XID…
 echo ""
 echo "Copying connection lists…"
+
+# For each connection list file containing trial XID…
 for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
 	# Remove initial './'
     FILE_FULL=$(echo $file | sed "s|^\./||")
@@ -132,8 +126,6 @@ ${SCRIPTS_DIR}/modify_connections.sh
 # Execute model on SGE
 echo ""
 echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
-
-# cd ${S2B_DIR}
-# export PATH=${PATH}:${HOME}/bin
-# ${S2B_DIR}/convert_script_s2b -gs \
-# 	-m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}
+cd ${S2B_DIR}
+export PATH=${PATH}:${HOME}/bin
+${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}
