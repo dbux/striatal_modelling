@@ -8,7 +8,11 @@ export TIME="1:30:00"
 # Set model name and experiment number
 export MODEL="Physical_2CH"
 export STRIATUM="20.04.10_17.00_84900+849"
-export EXP_NO="0"
+if [ -z "$1" ]
+	export EXP_NO="0"
+else
+	export EXP_NO=${1}
+fi
 
 # Set parallel job stride values
 export T_START="1"
@@ -42,10 +46,6 @@ rm -rf ${OUTPUT_ROOT}
 # Set model and connection list directories
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-
-# TODO: Sanity check on batch variables
-# TODO: Cleaner printout of batch variables
-# TODO: Update batch variable code to be less fragile, iterate over any two varaibles
 
 # Set number of channels, variation flags, and number of parallel jobs
 while getopts ":c:f:m:w:" opt; do
