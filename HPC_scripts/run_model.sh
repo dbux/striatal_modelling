@@ -8,7 +8,7 @@ export TIME="1:30:00"
 # Set model name and experiment number
 export MODEL="Physical_2CH"
 export STRIATUM="20.04.10_17.00_84900+849"
-if [ -z "$1" ]
+if [ -z "$1" ]; then
 	export EXP_NO="0"
 else
 	export EXP_NO=${1}
