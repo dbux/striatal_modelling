@@ -11,7 +11,7 @@ export F="bkFSI"
 export C="wCH"
 
 # Set defaults
-export CHANNELS="1"
+export CHANNELS="2"
 export VAR_FSI="0"
 export VAR_MSN="0"
 export VAR_WCH="0"
@@ -22,6 +22,8 @@ export EXP_VAR="0"
 export MID="0"
 export FID="0"
 export CID="50"
+
+# TODO: Include exp_no from previous script
 
 # Calculate the multiplier for each variable
 function get_id {
@@ -108,9 +110,9 @@ done
 
 # Set unique trial identifier
 if [ "${CHANNELS}" -gt 1 ]; then
-	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}
+	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}"_2CH"
 else
-	export XID=${M}${MID}"_"${F}${FID}
+	export XID=${M}${MID}"_"${F}${FID}"_1CH"
 fi
 echo "Unique trial identifier:" ${XID}
 

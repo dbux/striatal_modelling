@@ -9,11 +9,7 @@ export TIME="1:30:00"
 export MODEL="Physical_2CH"
 export STRIATUM="20.04.10_17.00_84900+849"
 export CHANNELS=2
-if [ -z "$1" ]; then
-	export EXP_NO="0"
-else
-	export EXP_NO=${1}
-fi
+export EXP_NO=0
 
 # Set parallel job stride values (to be modified later in script)
 export T_START="1"
