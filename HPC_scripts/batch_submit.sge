@@ -78,7 +78,7 @@ function get_id {
 # }
 
 # Set variation flags and number of channels
-while getopts ":c:f:m:w:" opt; do
+while getopts ":c:e:f:m:w:" opt; do
 	case $opt in
 		c) export CHANNELS=${OPTARG}
 		;;

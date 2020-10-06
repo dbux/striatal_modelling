@@ -45,7 +45,7 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Set number of channels, variation flags, and number of parallel jobs
-while getopts ":c:f:m:w:" opt; do
+while getopts ":c:e:f:m:w:" opt; do
 	case $opt in
 		c) export CHANNELS=${OPTARG}
 		;;
