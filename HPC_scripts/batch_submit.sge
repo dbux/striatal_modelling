@@ -80,7 +80,9 @@ function get_id {
 # Set variation flags and number of channels
 while getopts ":c:f:m:w:" opt; do
 	case $opt in
-		c) CHANNELS=${OPTARG}
+		c) export CHANNELS=${OPTARG}
+		;;
+		e) export EXP_NO=${OPTARG}
 		;;
 		f) 
 			VAR_FSI=${OPTARG}

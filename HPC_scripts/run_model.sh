@@ -6,7 +6,7 @@ export RMEM="30G"
 export TIME="1:30:00"
 
 # Set model name and experiment number
-export MODEL="Physical_2CH"
+export MODEL="Physical"
 export STRIATUM="20.04.10_17.00_84900+849"
 export CHANNELS=2
 export EXP_NO=0
@@ -47,7 +47,9 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 # Set number of channels, variation flags, and number of parallel jobs
 while getopts ":c:f:m:w:" opt; do
 	case $opt in
-		c) CHANNELS=${OPTARG}
+		c) export CHANNELS=${OPTARG}
+		;;
+		e) export EXP_NO=${OPTARG}
 		;;
 		f) 
 			VAR_FSI=${OPTARG}
