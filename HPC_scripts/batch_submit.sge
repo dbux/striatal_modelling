@@ -11,7 +11,6 @@ export F="bkFSI"
 export C="wCH"
 
 # Set defaults
-export CHANNELS="2"
 export VAR_FSI="0"
 export VAR_MSN="0"
 export VAR_WCH="0"
@@ -80,9 +79,13 @@ function get_id {
 # Set variation flags and number of channels
 while getopts ":c:e:f:m:w:" opt; do
 	case $opt in
-		c) export CHANNELS=${OPTARG}
-		;;
-		e) export EXP_NO=${OPTARG}
+		c) 
+			export CHANNELS=${OPTARG}
+			if [ "${CHANNELS}" -eq 1 ]; then
+				export EXP_NO=1
+		  	elif [ "${CHANNELS}" -eq 2 ]; then
+				export EXP_NO=0
+			fi
 		;;
 		f) 
 			VAR_FSI=${OPTARG}

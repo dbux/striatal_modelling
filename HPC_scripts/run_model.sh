@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: Modify to just set experiment since E0 is 2ch and e1 is 1ch
+
 # Set HPC parameters
 export USER="ac1drb"
 export RMEM="30G"
@@ -9,7 +11,7 @@ export TIME="1:30:00"
 export MODEL="Physical"
 export STRIATUM="20.04.10_17.00_84900+849"
 export CHANNELS=2
-export EXP_NO=0
+# export EXP_NO=0
 
 # Set parallel job stride values (to be modified later in script)
 export T_START="1"
@@ -45,11 +47,15 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Set number of channels, variation flags, and number of parallel jobs
-while getopts ":c:e:f:m:w:" opt; do
+while getopts ":c:f:m:w:" opt; do
 	case $opt in
-		c) export CHANNELS=${OPTARG}
-		;;
-		e) export EXP_NO=${OPTARG}
+		c) 
+			export CHANNELS=${OPTARG}
+			if [ "${CHANNELS}" -eq "1" ]; then
+				export EXP_NO=1
+		  	elif [ "${CHANNELS}" -eq "2" ]; then
+				export EXP_NO=0
+			fi
 		;;
 		f) 
 			VAR_FSI=${OPTARG}
@@ -75,6 +81,6 @@ while getopts ":c:e:f:m:w:" opt; do
 done
 
 # Send jobs to SGE
-echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} with ${CHANNELS} channels"
+echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL} batch_submit.sge \
 	-c${CHANNELS} -f${VAR_FSI} -m${VAR_MSN} -w${VAR_WCH}
