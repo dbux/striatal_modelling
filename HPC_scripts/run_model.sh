@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO: Modify to just set experiment since E0 is 2ch and e1 is 1ch
-
 # Set HPC parameters
 export USER="ac1drb"
 export RMEM="30G"
@@ -11,9 +9,8 @@ export TIME="1:30:00"
 export MODEL="Physical"
 export STRIATUM="20.04.10_17.00_84900+849"
 export CHANNELS=2
-# export EXP_NO=0
 
-# Set parallel job stride values (to be modified later in script)
+# Set parallel job stride values (modified later in script)
 export T_START="1"
 export T_STOP="1"
 export T_STRIDE="1"

@@ -38,44 +38,6 @@ function get_id {
 	export EXP_VAR=`echo ${EXP_VAR} + 1 | bc`
 }
 
-# # Modify model.xml to include the correct number of connections
-# function modify_connections {
-# 	# Go to simulation working directory
-# 	cd ${WORK_DIR}
-#
-# 	# Check for existence of model.xml
-# 	if [ ! -e model.xml ]; then
-# 		echo "No model.xml found in $(pwd); aborting."
-# 	else
-# 		echo "In ${WORK_DIR}:"
-#
-# 		# For every .bin file
-# 		for file in *.bin; do
-# 			# Break out of the loop if no .bin files exist
-# 			[ -f "$file" ] || break
-# 			echo "••• ${file} found…"
-#
-# 			# Get name of file without extension
-# 			FILE_CSV=$(basename $file .bin).csv
-#
-# 			# If a corresponding CSV exists
-# 			if [ -f ${FILE_CSV} ]; then
-# 				# Get the number of CSV rows
-# 				CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})
-#
-# 				# Construct the string occurring immediately before the number of connections
-# 				STR_MATCH=${file}'" num_connections="'
-#
-# 				# Correct the number of connections in model.xml
-# 				sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml
-# 				echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
-# 			else
-# 				echo "(!) ${FILE_CSV} not found"
-# 			fi
-# 		done
-# 	fi
-# }
-
 # Set variation flags and number of channels
 while getopts ":c:e:f:m:w:" opt; do
 	case $opt in
@@ -148,20 +110,6 @@ echo "Copying connection lists…"
 cp ${LISTS_DIR}/conn_* 			${WORK_DIR}
 cp ${LISTS_DIR}/${XID}/conn_* 	${WORK_DIR}
 
-# # For each connection list file containing trial XID…
-# for file in $(find . -maxdepth 1 -name "*${XID}.*"); do
-# 	# Remove initial './'
-#     FILE_FULL=$(echo $file | sed "s|^\./||")
-#
-# 	# Remove trial-specific descriptors
-#     # FILE_TRIM=$(echo $FILE_FULL | sed "s/_bkMSN[0-9]\+_bkFSI[0-9]\+//")
-# 	FILE_TRIM=$(echo $FILE_FULL | sed "s/_${M}[0-9]\+_${F}[0-9]\+_${C}[0-9]\+//")
-#
-# 	# Copy connection list to work directory with unique descriptors removed
-# 	echo $file" → "${WORK_DIR}"/"${FILE_TRIM}
-#     cp $file ${WORK_DIR}/${FILE_TRIM}
-# done
-
 # Copy other model files to work directory
 cp -n ${MODEL_DIR}/* ${WORK_DIR}
 
@@ -169,7 +117,7 @@ cp -n ${MODEL_DIR}/* ${WORK_DIR}
 echo ""
 echo "Modifying model.xml…"
 
-# Check for existence of model.xml   
+# Check for existence of model.xml and modify number of connections 
 cd ${WORK_DIR}                                                         
 if [ ! -e model.xml ]; then                                                
 	echo "No model.xml found in $(pwd); aborting."
