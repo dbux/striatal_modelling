@@ -19,35 +19,46 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 [s_dir, l_dir] = get_paths;
 
 %% CONFIGURATION
-% Set basic parameters
+% Basic parameters
 attr.Striatum_ID = '20.04.10_17.00_84900+849';
-attr.Experiment  = 'Physical';
-attr.Channels    = 1;
-
-% Striatum and log paths depend on current machine and experiment details
-attr.Striatum_path = fullfile(s_dir, attr.Striatum_ID);
-attr.Log_root = fullfile(l_dir, attr.Experiment);
-
-% TODO: Move these to attr.
-% Set key text for extraction of population name and trial information from logfile
-csv_text = '_spike_';
-trial_text = {'bkMSN', 'bkFSI'};
-if attr.Channels > 1
-    trial_text{end + 1} = 'wCH';
+attr.Experiment  = 'Physical_without-N_2CH';
+% TODO: Extract number of channels from directory name
+attr.Channels    = 2;
+if attr.Channels == 1
+    attr.C1_start = 1000;
+    attr.C1_end   = 2000;
+elseif attr.Channels == 2
+    attr.C1_start = 500;
+    attr.C1_end   = 2500;
+    attr.C2_start = 1500;
+    attr.C2_end   = 3500;
+else
+    fprintf('Unknown number of channels declared')
 end
 
 % Number of milliseconds over which to average spike counts
 attr.BinWidth = 10;
 
-% Set oscillation taper parameters
+% Striatum and log paths depend on current machine and experiment details
+attr.Striatum_path = fullfile(s_dir, attr.Striatum_ID);
+attr.Log_root = fullfile(l_dir, attr.Experiment);
+
+% Set key text for extraction of population name and trial information from logfile
+attr.csv_text = '_spike_';
+attr.trial_text = {'bkMSN', 'bkFSI'};
+if attr.Channels > 1
+    attr.trial_text{end + 1} = 'wCH';
+end
+
+% Oscillation taper parameters
 % W = 10;                       % Bandwidth
 % T = 0.5;                      % Taper duration
-% p = floor((2* W * T) - 1);    % Should be 2TW - 1
+% p = floor((2 * W * T) - 1);	% Should be 2TW - 1
 % params.tapers = [W, T, p];        
 params.tapers = [5, 9];
 
-% Duration (ms) of experiment to analyse for osicallations
-params.time = 1000;
+% Duration (ms) of experiment to analyse for oscillations
+% params.time = 1000;
 
 %% START
 % Get all CSV files and remove non-log entries (e.g. connection lists)
@@ -86,24 +97,22 @@ for i = 1:size(csv_list, 1)
 
     % Get population name
     attr.Logs(i).Population = attr.Logs(i).Log_file(...
-        1 : strfind(attr.Logs(i).Log_file, csv_text) - 1);
-    
-%     for j = 1:length(trial_text)
+        1 : strfind(attr.Logs(i).Log_file, attr.csv_text) - 1);
 
-    for j = 1:length(trial_text)
+    for j = 1:length(attr.trial_text)
         % Get trial variables
         % From https://uk.mathworks.com/matlabcentral/answers/44049-extract-numbers-from-mixed-string
 
         % Get key text index
-        idx = strfind(attr.Logs(i).Trial, trial_text{j});
+        idx = strfind(attr.Logs(i).Trial, attr.trial_text{j});
 
         try
             % Extract number following key text
-            attr.Logs(i).(trial_text{j}) = sscanf(...
-                attr.Logs(i).Trial(idx(1) + length(trial_text{j}):end), '%g');
+            attr.Logs(i).(attr.trial_text{j}) = sscanf(...
+                attr.Logs(i).Trial(idx(1) + length(attr.trial_text{j}):end), '%g');
         catch
             % Ignore if single trial is being analysed
-            fprintf('Unable to extract trial variable %s', trial_text{j});
+            fprintf('Unable to extract trial variable %s', attr.trial_text{j});
         end
     end
 end
@@ -165,14 +174,17 @@ for i = 1:size(attr.Logs, 2)
         raw_s(:, 2) = list.(attr.Logs(i).Population_ID)(idx, 1);
     end
     
+%     % Create unique headers for this trial
+%     header = strcat(...
+%         attr.Experiment, '_', ...
+%         attr.Logs(i).Trial, '_', ...
+%         attr.Logs(i).Population);
     % Create unique headers for this trial
-    header = strcat(...
-        attr.Experiment, '_', ...
-        attr.Logs(i).Trial, '_', ...
-        attr.Logs(i).Population);
+    header = strcat(attr.Logs(i).Trial, '_', attr.Logs(i).Population);
     
     % If there are 2 or more channels and the current logfile is not an input
     if attr.Channels > 1 && ~contains(attr.Logs(i).Population, 'input')
+%     if attr.Channels > 1
         for c = 1:attr.Channels  
             ch = sprintf('ch%d', c);
             fprintf('        Processing channel %d: ', c)
@@ -181,7 +193,6 @@ for i = 1:size(attr.Logs, 2)
             chn_s = raw_s(ismember(raw_s(:, 2), list.(ch).(attr.Logs(i).Population_ID)(:, 1)), :);
             
             % Create unique headers for this trial
-%             header = strcat(header_prefix, '_', ch);
             [tot, avg, rol, spc, frq] = make_headers(strcat(header, '_', ch), attr.BinWidth);
             
             % Perform data analysis           
@@ -194,12 +205,58 @@ for i = 1:size(attr.Logs, 2)
                 = analyse_spikes(attr.Logs(i), chn_s, attr.BinWidth);
             fprintf('done! ')
             
+%             plusone = results.Spikes.(avg)(results.Spikes.(avg) > 1)
+% %             lastone = plusone(end) == plusone
+%             idx = find(plusone(end) == plusone)
+%             lastmainspike = idx(end)
+            
+            % TODO: Get last time index where avg spks/s is above 1, then make
+            % that the final time index for CH1 oscillation analysis
+            % OR come up with alternative method for analysing oscillation
             fprintf('Oscillations… ')
+            if c == 1
+                % TODO: Declare these up top somewhere
+                solo_start = attr.C1_start;
+                [solo_end, overlap_start] = deal(attr.C2_start);
+                overlap_end = attr.C1_end;           
+            elseif c == 2
+                [solo_start, overlap_end] = deal(attr.C1_end);
+                overlap_start = attr.C2_start;
+                solo_end = attr.C2_end;
+            else
+                fprintf('Unknown channel for oscillation analysis')
+            end
+            
+%             fprintf('Oscillations… ')
+%             [...
+%                 results.Oscillations.(spc), ...
+%                 results.Oscillations.(frq)...
+%             ]...
+%                 = analyse_oscillations(attr.Logs(i), chn_s, params);
+            fprintf('solo… ')
+            
+            % Append headers
+            spc_solo = strcat(spc, '_solo');
+            frq_solo = strcat(frq, '_solo');
+            
             [...
-                results.Oscillations.(spc), ...
-                results.Oscillations.(frq)...
+                results.Oscillations.(spc_solo), ...
+                results.Oscillations.(frq_solo)...
             ]...
-                = analyse_oscillations(attr.Logs(i), chn_s, params);
+            = analyse_oscillations(attr.Logs(i), chn_s, [solo_start, solo_end], params);
+
+            fprintf('overlap… ')
+            
+            % Append headers
+            spc_overlap = strcat(spc, '_overlap');
+            frq_overlap = strcat(frq, '_overlap');
+            
+            [...
+                results.Oscillations.(spc_overlap), ...
+                results.Oscillations.(frq_overlap)...
+            ]...
+            = analyse_oscillations(attr.Logs(i), chn_s, [overlap_start, overlap_end], params);
+        
             fprintf('done!\n')
         end
     else
@@ -219,93 +276,33 @@ for i = 1:size(attr.Logs, 2)
         fprintf('done! ')
         
         fprintf('Oscillations… ')
+        % Modify start and end time of oscillation analysis
+        switch attr.Logs(i).Population
+            case 'CH1_input'
+                t_start = 1500;
+                t_end   = 2500;
+            case 'CH2_input'
+                t_start = 2500;
+                t_end   = 3500;
+            case 'BKG_input'
+                t_start = 2500;
+                t_end   = 3500;
+            otherwise
+                t_start = attr.C1_start;
+                t_end   = attr.C1_end;
+        end
         [...
             results.Oscillations.(spc), ...
             results.Oscillations.(frq)...
         ]...
-            = analyse_oscillations(attr.Logs(i), raw_s, params);
+            = analyse_oscillations(attr.Logs(i), raw_s, [t_start, t_end], params);
         fprintf('done!\n')
     end
-    
-    
-    
-
-    
-    
-    
-    
-      
-    % TODO: Figure out why this isn't carving up spikes properly
-%     for c = 1:attr.Channels       
-% %         % If the current logfile is not an input
-% %         if ~contains(attr.Logs(i).Population, 'input')
-% %             ch = sprintf('ch%d', c);
-% %             fprintf('        Processing channel %d: ', c)
-% %             
-% %             % Extract spikes from the current channel
-% %             chn_s = raw_s(ismember(raw_s(:, 2), list.(ch).(attr.Logs(i).Population_ID)(:, 1)), :);
-% %             
-% %             % Create unique headers for this trial
-% %             header = strcat(header, '_', ch);
-% %         else 
-% %             if c > 1
-% %                 continue
-% %             end
-% %             fprintf('        Processing input: ')
-% %             chn_s = raw_s; 
-% %             
-% % 
-% %         end
-%         
-% %         % Spikes
-% %         avg = strcat(header, '_SPmean');
-% %         tot = strcat(header, '_SPtotal');       
-% %         rol = strcat(header, sprintf('_SProll_%dms', attr.BinWidth));
-% %         
-% % %         % Oscillations
-% % %         spc = strcat(header, '_OSspec');
-% % %         frq = strcat(header, '_OSfreq');
-% %         
-% %         %% SPIKE ANALYSIS
-% %         fprintf('Spikes… ')
-% %                
-% %         % Total spikes per millisecond
-% %         results.Spikes.(tot) = [histcounts(raw_s(:,1), 0:attr.Logs(i).Duration)]'; %#ok<*NBRAK>
-% % 
-% %         % Mean spikes per neuron per second
-% %         results.Spikes.(avg) = ...
-% %             [histcounts(chn_s(:,1), 0:attr.Logs(i).Duration) ...
-% %             / attr.Logs(i).Neurons_active * 1000]';
-% % 
-% %         % Rolling mean of spikes per neuron per 'binwidth' milliseconds
-% %         results.Spikes.(rol) = movmean(results.Spikes.(avg), attr.BinWidth);
-% % 
-% %         fprintf('done! ')
-%               
-% %         %% OSCILLATION ANALYSIS
-% %         fprintf('Oscillations… ')
-% %         
-% %         % Analyse only spikes from the last 'params.time' milliseconds
-% %         trm_s = chn_s(chn_s(:,1) > max(chn_s(:,1)) - params.time, 1);
-% % 
-% %         [...
-% %             results.Oscillations.(spc), ...
-% %             results.Oscillations.(frq), ...
-% %             ~...
-% %         ] = mtspectrumpt(trm_s, params);
-% % 
-% %         % Calibrate spectral power to be accurate per *active* neuron
-% %         results.Oscillations.(spc) = results.Oscillations.(spc) / attr.Logs(i).Neurons_active ^ 2;
-% % 
-% %         % Frequencies output must be transposed
-% %         results.Oscillations.(frq) = results.Oscillations.(frq)';
-% % 
-% %         fprintf('done!\n')
-%     end
 end
 
 % Append time to output structure
-results.Spikes.(strcat(attr.Experiment, '_Time')) = (1:max([attr.Logs.Duration]))';
+% results.Spikes.(strcat(attr.Experiment, '_Time')) = (1:max([attr.Logs.Duration]))';
+results.Spikes.Time = (1:max([attr.Logs.Duration]))';
 
 %% SAVE DATA
 % Create directory for output data
@@ -324,6 +321,8 @@ fprintf('Oscillations… ')
 struct2csv(results.Oscillations, fullfile(...
     out_dir, strcat(attr.Experiment, '_oscillations.csv')));
 fprintf('done!\n')
+
+%% FUNCTIONS
 
 function [tot, avg, rol, spc, frq] = make_headers(header, bw)
     % Spikes
@@ -347,10 +346,13 @@ function [spk_tot, spk_avg, spk_rol] = analyse_spikes(log, spikes, bw)
     spk_rol = movmean(spk_avg, bw);
 end
 
-function [osc_spc, osc_frq] = analyse_oscillations(log, spikes, params)
-     % Analyse only spikes from the last 'params.time' milliseconds
-     % TODO: FIX THIS (analysing wrong part of ch1)
-    trm_s = spikes(spikes(:,1) > max(spikes(:,1)) - params.time, 1);
+% function [osc_spc, osc_frq] = analyse_oscillations(log, spikes, params)
+function [osc_spc, osc_frq] = analyse_oscillations(log, spikes, time, params)
+     % Analyse only spikes from the last 'params.time' milliseconds   
+%     trm_s = spikes(spikes(:,1) > max(spikes(:,1)) - params.time, 1);
+
+    % Trim spikes to those in specified time region
+    trm_s = spikes((time(2) > spikes(:,1) & spikes(:,1) > time(1)), 1);
     
     [osc_spc, osc_frq, ~] = mtspectrumpt(trm_s, params);
     

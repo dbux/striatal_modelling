@@ -107,11 +107,11 @@ fi
 # cd ${LISTS_DIR}
 echo ""
 echo "Copying connection lists…"
-cp ${LISTS_DIR}/conn_* 			${WORK_DIR}
-cp ${LISTS_DIR}/${XID}/conn_* 	${WORK_DIR}
+cp -v	${LISTS_DIR}/conn_* 			${WORK_DIR}
+cp -v	${LISTS_DIR}/${XID}/conn_* 		${WORK_DIR}
 
 # Copy other model files to work directory
-cp -n ${MODEL_DIR}/* ${WORK_DIR}
+cp -vn 	${MODEL_DIR}/* 					${WORK_DIR}
 
 # Rewrite model connection lists
 echo ""

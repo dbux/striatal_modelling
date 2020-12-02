@@ -33,11 +33,11 @@ export WORK_ROOT="${FD}/temp"
 
 # Clear previous data
 echo "Clearing old logs…"
-rm ${LOGS_DIR}/*
+rm -v	${LOGS_DIR}/*
 echo "Clearing old temp files…"
-rm -rf ${WORK_ROOT}
+rm -vrf	${WORK_ROOT}
 echo "Clearing old output…"
-rm -rf ${OUTPUT_ROOT}
+rm -vrf	${OUTPUT_ROOT}
 
 # Set model and connection list directories
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
