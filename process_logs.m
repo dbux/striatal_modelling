@@ -13,17 +13,20 @@ clear variables; clc
 addpath(genpath('~/MatLab'));
 addpath(genpath('/home/ac1drb/MatLab'));
 
+% Disable directory warnings
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
-% Get path for loading striatum data and log files
+% Get paths for striatum data and log files
 [s_dir, l_dir] = get_paths;
+
 
 %% CONFIGURATION
 % Basic parameters
 attr.Striatum_ID = '20.04.10_17.00_84900+849';
-attr.Experiment  = 'Physical_without-N_2CH';
+attr.Experiment  = 'Physical_without-N_dual-inputs2';
+
 % TODO: Extract number of channels from directory name
-attr.Channels    = 2;
+attr.Channels    = 1;
 if attr.Channels == 1
     attr.C1_start = 1000;
     attr.C1_end   = 2000;
@@ -36,12 +39,7 @@ else
     fprintf('Unknown number of channels declared')
 end
 
-% Number of milliseconds over which to average spike counts
-attr.BinWidth = 10;
-
-% Striatum and log paths depend on current machine and experiment details
-attr.Striatum_path = fullfile(s_dir, attr.Striatum_ID);
-attr.Log_root = fullfile(l_dir, attr.Experiment);
+% TODO: Change trial_text and csv_text things into regular expressions
 
 % Set key text for extraction of population name and trial information from logfile
 attr.csv_text = '_spike_';
@@ -50,6 +48,10 @@ if attr.Channels > 1
     attr.trial_text{end + 1} = 'wCH';
 end
 
+% Analysis parameters
+% Number of milliseconds over which to average spike counts
+attr.BinWidth = 10;
+
 % Oscillation taper parameters
 % W = 10;                       % Bandwidth
 % T = 0.5;                      % Taper duration
@@ -57,10 +59,14 @@ end
 % params.tapers = [W, T, p];        
 params.tapers = [5, 9];
 
+% Striatum and log paths depend on current machine and experiment details
+attr.Striatum_path = fullfile(s_dir, attr.Striatum_ID);
+attr.Log_root = fullfile(l_dir, attr.Experiment);
+
 % Duration (ms) of experiment to analyse for oscillations
 % params.time = 1000;
 
-%% START
+%% GET TRIALS METADATA
 % Get all CSV files and remove non-log entries (e.g. connection lists)
 csv_list = dir(fullfile(attr.Log_root, '/**/*.csv'));
 csv_list(~contains({csv_list.folder}, '/log')) = [];
@@ -143,6 +149,9 @@ for i = 1:size(attr.Logs, 2)
                 attr.Logs(i).Population = 'CH2_input';
             elseif contains(attr.Logs(i).Population, 'BKG')
                 attr.Logs(i).Population = 'BKG_input';
+            % TEMP FOR 1A input
+            elseif contains(attr.Logs(i).Population, 'CH1A_input')
+                attr.Logs(i).Population = 'CH1A_input';
             else
                 error('Unknown striatal population encountered'); 
             end
@@ -278,7 +287,7 @@ for i = 1:size(attr.Logs, 2)
         fprintf('Oscillations… ')
         % Modify start and end time of oscillation analysis
         switch attr.Logs(i).Population
-            case 'CH1_input'
+            case {'CH1_input', 'CH1A_input'}
                 t_start = 1500;
                 t_end   = 2500;
             case 'CH2_input'

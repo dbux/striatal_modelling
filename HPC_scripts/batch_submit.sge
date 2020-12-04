@@ -18,7 +18,8 @@ export NUM_VAR="5"
 export EXP_VAR="0"
 
 # Default to 0% background and 50% channel width
-export MID="0"
+# export MID="0"
+export MID="60"
 export FID="0"
 export CID="50"
 
