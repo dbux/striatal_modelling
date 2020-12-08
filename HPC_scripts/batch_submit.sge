@@ -19,9 +19,10 @@ export EXP_VAR="0"
 
 # Default to 0% background and 50% channel width
 # export MID="0"
-export MID="60"
+export MID="20"
 export FID="0"
-export CID="50"
+# export CID="50"
+export CID="100"
 
 # TODO: Include exp_no from previous script
 
