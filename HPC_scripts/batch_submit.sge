@@ -14,7 +14,7 @@ export C="wCH"
 export VAR_FSI="0"
 export VAR_MSN="0"
 export VAR_WCH="0"
-# export NUM_VAR="5"
+export NUM_VAR="6"
 export EXP_VAR="0"
 
 # Default to 0% background and 50% channel width
@@ -31,15 +31,12 @@ function get_id {
 	# The quotient of the current task ID and 5^(number of variables - 1) allows us to iterate over each one at the required intervals
 	export ID=`echo "scale=0 ; (${SGE_TASK_ID} - 1) / (${NUM_VAR} ^ ${EXP_VAR})" | bc` 
 	
-	# DEBUG
-	echo "Unmodified internal ID:" ${ID}
-	
 	while [ "${ID}" -gt "${NUM_VAR}" ]; do
 		export ID=`echo "scale=0 ; (${ID} - (${NUM_VAR} - 1)) / (${NUM_VAR} ^ ${EXP_VAR})" | bc` 
 	done
 	
 	# DEBUG
-	echo "MODIFIED internal ID:" ${ID}
+	echo "Internal ID:" ${ID}
 	
 	# Increment exponent value for next value
 	export EXP_VAR=`echo ${EXP_VAR} + 1 | bc`
@@ -59,7 +56,7 @@ while getopts ":c:e:f:m:w:" opt; do
 		f) 
 			VAR_FSI=${OPTARG}
 		  	if [ "${VAR_FSI}" -ne 0 ]; then
-				export NUM_VAR="6"
+				# export NUM_VAR="6"
 				get_id
 				export FID=`echo "${ID} * 20" | bc`			
 		  	fi
@@ -67,7 +64,7 @@ while getopts ":c:e:f:m:w:" opt; do
 		m)
 			VAR_MSN=${OPTARG}
 		  	if [ "${VAR_MSN}" -ne 0 ]; then
-				export NUM_VAR="5"
+				# export NUM_VAR="5"
 				get_id			
 				export MID=`echo "${ID} * 20" | bc`		  		
 		  	fi
@@ -75,7 +72,7 @@ while getopts ":c:e:f:m:w:" opt; do
 		w)
 			VAR_WCH=${OPTARG}
 		  	if [[ ("${VAR_WCH}" -ne 0 && "${CHANNELS}" -gt 1) ]]; then
-				export NUM_VAR="5"
+				# export NUM_VAR="5"
 				get_id			
 				export CID=`echo "(${ID} + 1) * 20" | bc`		  		
 		  	fi
@@ -92,6 +89,8 @@ else
 	export XID=${M}${MID}"_"${F}${FID}"_1CH"
 fi
 echo "Unique trial identifier:" ${XID}
+
+# TODO: Check if XID connection list exists and quit if not
 
 
 #
