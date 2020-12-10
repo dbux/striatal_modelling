@@ -17,6 +17,11 @@ export T_START="1"
 export T_STOP="1"
 export T_STRIDE="1"
 
+# Number of variations in FSI / MSN / WCH variables
+export NUM_FSI="6"
+export NUM_MSN="5"
+export NUM_WCH="5"
+
 ####################
 
 # Set root directories
@@ -60,19 +65,19 @@ while getopts ":c:f:m:w:" opt; do
 		f) 
 			VAR_FSI=${OPTARG}
 		  	if [ ! -z "${VAR_FSI}" ]; then
-		  		export T_STOP=`echo ${T_STOP} \* 6 | bc`
+		  		export T_STOP=`echo ${T_STOP} \* ${NUM_FSI} | bc`
 		  	fi
 		;;
 		m)
 			VAR_MSN=${OPTARG}
 		  	if [ ! -z "${VAR_MSN}" ]; then
-		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
+		  		export T_STOP=`echo ${T_STOP} \* ${NUM_MSN} | bc`
 		  	fi
 		;;
 		w) 
 			VAR_WCH=${OPTARG}
 		  	if [ ! -z "${VAR_WCH}" ]; then
-		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
+		  		export T_STOP=`echo ${T_STOP} \* ${NUM_WCH} | bc`
 		  	fi
 		;;
 		\?) echo "Invalid option -${OPTARG}" >&2
@@ -82,5 +87,6 @@ done
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL} batch_submit.sge \
-	-c${CHANNELS} -f${VAR_FSI} -m${VAR_MSN} -w${VAR_WCH}
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL} batch_submit.sge
+ # \
+	# -c${CHANNELS} -f${VAR_FSI} -m${VAR_MSN} -w${VAR_WCH}
