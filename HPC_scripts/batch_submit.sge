@@ -56,14 +56,14 @@ if [ ! -z "${VAR_FSI}" ]; then
 	while [ "${FID}" -ge "${MAX_FSI}" ]; do
 		export FID=`echo "${FID} - ${MAX_FSI}" | bc`
 	done
-done
+fi
 
 if [ ! -z "${VAR_MSN}" ]; then
 	export MID=`echo "(${SGE_TASK_ID} - 1) * ${VAL}" | bc`
 	while [ "${MID}" -ge "${MAX_MSN}" ]; do
 		export MID=`echo "${MID} - ${MAX_MSN}" | bc`
 	done
-done
+fi
 
 if [ ! -z "${VAR_WCH}" ]; then
 	# WCH calculation is different as range starts at 20 instead of 0
@@ -71,7 +71,7 @@ if [ ! -z "${VAR_WCH}" ]; then
 	while [ "${CID}" -gt "${MAX_WCH}" ]; do
 		export CID=`echo "${CID} - ${MAX_WCH}" | bc`
 	done
-done
+fi
 
 # # Set variation flags and number of channels
 # while getopts ":c:e:f:m:w:" opt; do
