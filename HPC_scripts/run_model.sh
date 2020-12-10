@@ -34,12 +34,13 @@ export SCRIPTS_DIR="${HOME}/scripts"
 export WORK_ROOT="${FD}/temp"
 
 # Clear previous data
-echo -n "Clearing logs…"
+echo -n	"Clearing logs…"
 rm -rf	${LOGS_DIR}/*
-echo -n " temp files…"
+echo -n	" temp files…"
 rm -rf	${WORK_ROOT}
-echo " output…"
+echo -n	" output…"
 rm -rf	${OUTPUT_ROOT}
+echo	" done!"
 
 # Set model and connection list directories
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
@@ -59,7 +60,7 @@ while getopts ":c:f:m:w:" opt; do
 		f) 
 			VAR_FSI=${OPTARG}
 		  	if [ ! -z "${VAR_FSI}" ]; then
-		  		export T_STOP=`echo ${T_STOP} \* 5 | bc`
+		  		export T_STOP=`echo ${T_STOP} \* 6 | bc`
 		  	fi
 		;;
 		m)
