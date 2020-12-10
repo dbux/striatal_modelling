@@ -2,10 +2,8 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-# export RMEM="30G"
-# export TIME="1:30:00"
-export RMEM="2G"
-export TIME="0:05:00"
+export RMEM=# "30G"
+export TIME="1:30:00"
 
 # Set model name and experiment number
 export MODEL="Physical"
@@ -88,5 +86,3 @@ done
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL} batch_submit.sge
- # \
-	# -c${CHANNELS} -f${VAR_FSI} -m${VAR_MSN} -w${VAR_WCH}
