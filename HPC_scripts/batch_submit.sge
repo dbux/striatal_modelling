@@ -20,10 +20,10 @@ export CID="50"
 # export VAR_MSN="0"
 # export VAR_WCH="0"
 
-# Number of variations in FSI / MSN / WCH variables
-export NUM_FSI="6"
-export NUM_MSN="5"
-export NUM_WCH="5"
+# # Number of variations in FSI / MSN / WCH variables
+# export NUM_FSI="6"
+# export NUM_MSN="5"
+# export NUM_WCH="5"
 
 # Difference between each FSI / MSN / WCH variable
 export VAL="20"
