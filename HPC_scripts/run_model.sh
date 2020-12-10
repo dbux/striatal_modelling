@@ -34,11 +34,11 @@ export SCRIPTS_DIR="${HOME}/scripts"
 export WORK_ROOT="${FD}/temp"
 
 # Clear previous data
-echo "Clearing old logs…"
+echo -n "Clearing logs…"
 rm -rf	${LOGS_DIR}/*
-echo "Clearing old temp files…"
+echo -n " temp files…"
 rm -rf	${WORK_ROOT}
-echo "Clearing old output…"
+echo " output…"
 rm -rf	${OUTPUT_ROOT}
 
 # Set model and connection list directories
