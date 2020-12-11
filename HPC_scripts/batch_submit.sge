@@ -121,78 +121,78 @@ else
 fi
 echo "Unique trial identifier:" ${XID}
 
-# TODO: Check if XID connection list exists and cancel trial otherwise
-
-# Set unique per-simulation work and output directories
-export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
-export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
-echo "Working directory: ${WORK_DIR}"
-echo "Output directory: ${OUTPUT_DIR}"
-
-# Check for directory existence
-if [ ! -d ${WORK_DIR} ]; then
-    mkdir -p ${WORK_DIR}
-else
-	echo "WARNING! Working directory already exists; proceeding anyway"
-fi
-
-# Create output directory
-if [ ! -d ${OUTPUT_DIR} ]; then
-	mkdir -p ${OUTPUT_DIR}
-else
-	echo "WARNING! Output directory already exists; proceeding anyway"
-fi
-
-# Model construction and execution loop
-# cd ${LISTS_DIR}
-echo ""
-echo "Copying connection lists…"
-cp -v	${LISTS_DIR}/conn_* 			${WORK_DIR}
-cp -v	${LISTS_DIR}/${XID}/conn_* 		${WORK_DIR}
-
-# Copy other model files to work directory
-cp -vn 	${MODEL_DIR}/* 					${WORK_DIR}
-
-# Rewrite model connection lists
-echo ""
-echo "Modifying model.xml…"
-
-# Check for existence of model.xml and modify number of connections
-cd ${WORK_DIR}
-if [ ! -e model.xml ]; then
-	echo "No model.xml found in $(pwd); aborting."
-else
-	echo "In ${WORK_DIR}:"
-
-	# For every .bin file
-	for file in *.bin; do
-		# Break out of the loop if no .bin files exist
-		[ -f "$file" ] || break
-		echo " ·  ${file} found…"
-
-		# Get name of file without extension
-		FILE_CSV=$(basename $file .bin).csv
-
-		# If a corresponding CSV exists
-		if [ -f ${FILE_CSV} ]; then
-			# Get the number of CSV rows
-			CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})
-
-			# Construct the string occurring immediately before the number of connections
-			STR_MATCH=${file}'" num_connections="'
-
-			# Correct the number of connections in model.xml
-			sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml
-			echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
-		else
-			echo "(!) ${FILE_CSV} not found"
-		fi
-	done
-fi
-
-# Execute model on SGE
-echo ""
-echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
-cd ${S2B_DIR}
-export PATH=${PATH}:${HOME}/bin
-${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}
+# TOD# O: Check if XID connection list exists and cancel trial otherwise
+#
+# # Set unique per-simulation work and output directories
+# export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
+# export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
+# echo "Working directory: ${WORK_DIR}"
+# echo "Output directory: ${OUTPUT_DIR}"
+#
+# # Check for directory existence
+# if [ ! -d ${WORK_DIR} ]; then
+#     mkdir -p ${WORK_DIR}
+# else
+# 	echo "WARNING! Working directory already exists; proceeding anyway"
+# fi
+#
+# # Create output directory
+# if [ ! -d ${OUTPUT_DIR} ]; then
+# 	mkdir -p ${OUTPUT_DIR}
+# else
+# 	echo "WARNING! Output directory already exists; proceeding anyway"
+# fi
+#
+# # Model construction and execution loop
+# # cd ${LISTS_DIR}
+# echo ""
+# echo "Copying connection lists…"
+# cp -v	${LISTS_DIR}/conn_* 			${WORK_DIR}
+# cp -v	${LISTS_DIR}/${XID}/conn_* 		${WORK_DIR}
+#
+# # Copy other model files to work directory
+# cp -vn 	${MODEL_DIR}/* 					${WORK_DIR}
+#
+# # Rewrite model connection lists
+# echo ""
+# echo "Modifying model.xml…"
+#
+# # Check for existence of model.xml and modify number of connections
+# cd ${WORK_DIR}
+# if [ ! -e model.xml ]; then
+# 	echo "No model.xml found in $(pwd); aborting."
+# else
+# 	echo "In ${WORK_DIR}:"
+#
+# 	# For every .bin file
+# 	for file in *.bin; do
+# 		# Break out of the loop if no .bin files exist
+# 		[ -f "$file" ] || break
+# 		echo " ·  ${file} found…"
+#
+# 		# Get name of file without extension
+# 		FILE_CSV=$(basename $file .bin).csv
+#
+# 		# If a corresponding CSV exists
+# 		if [ -f ${FILE_CSV} ]; then
+# 			# Get the number of CSV rows
+# 			CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})
+#
+# 			# Construct the string occurring immediately before the number of connections
+# 			STR_MATCH=${file}'" num_connections="'
+#
+# 			# Correct the number of connections in model.xml
+# 			sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml
+# 			echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
+# 		else
+# 			echo "(!) ${FILE_CSV} not found"
+# 		fi
+# 	done
+# fi
+#
+# # Execute model on SGE
+# echo ""
+# echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
+# cd ${S2B_DIR}
+# export PATH=${PATH}:${HOME}/bin
+# ${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}
