@@ -67,7 +67,7 @@ fi
 
 if [ ! -z "${VAR_WCH}" ]; then
 	# WCH calculation is different as range starts at 20 instead of 0
-	export CID=`echo "${SGE_TASK_ID} * ${VAL}" | bc`
+	export CID=`echo "(${SGE_TASK_ID} + 1) * ${VAL}" | bc`
 	while [ "${CID}" -gt "${MAX_WCH}" ]; do
 		export CID=`echo "${CID} - ${MAX_WCH}" | bc`
 	done
