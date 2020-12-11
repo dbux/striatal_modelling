@@ -195,4 +195,4 @@ echo ""
 echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
 cd ${S2B_DIR}
 export PATH=${PATH}:${HOME}/bin
-${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR}-o ${OUTPUT_DIR}
+${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}
