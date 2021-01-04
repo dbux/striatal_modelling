@@ -121,7 +121,7 @@ else
 fi
 
 # TEMP: FORCING DUPLICATE CONNECTION LISTS FOR TEST
-export XID = "bkMSN60_bkFSI0_1CH_DUPLICATE"
+export XID="bkMSN60_bkFSI0_1CH_DUPLICATE"
 
 
 echo "Unique trial identifier:" ${XID}
