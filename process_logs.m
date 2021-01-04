@@ -23,10 +23,11 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 %% CONFIGURATION
 % Basic parameters
 attr.Striatum_ID = '20.04.10_17.00_84900+849';
-attr.Experiment  = 'Physical_without-N_dual-inputs2';
+attr.Experiment  = 'Physical_2CH';
+attr.Channels    = 2;
 
 % TODO: Extract number of channels from directory name
-attr.Channels    = 1;
+
 if attr.Channels == 1
     attr.C1_start = 1000;
     attr.C1_end   = 2000;
@@ -50,7 +51,7 @@ end
 
 % Analysis parameters
 % Number of milliseconds over which to average spike counts
-attr.BinWidth = 10;
+attr.BinWidth = 2;
 
 % Oscillation taper parameters
 % W = 10;                       % Bandwidth

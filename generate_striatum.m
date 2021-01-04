@@ -35,10 +35,10 @@ attr.fsi_pct     = 1;       % Percentage of MSNs to be added as FSIs
 
 % TODO: These should not be in the attr struct
 % Connectivity attributes
-conn.ch_all      = 2;        % Total number of channels (not including background)
+conn.ch_all      = 1;        % Total number of channels (not including background)
 conn.ch_width    = 50;      % Percentage width of each channel in physical model (0 means no channel inputs).
 conn.bkg_msn     = 0;        % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
-conn.bkg_fsi     = 0;        % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
+conn.bkg_fsi     = 100;        % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
 
 % Process flags
 flags.phys_ch    = 1;        % Separate channels based on physical location? (TWO CHANNELS ONLY)
@@ -94,7 +94,7 @@ else
             conn.bkg_msn = m;
             
             % Iterate active FSI density
-            for f = 0:flags.density:(100 - flags.density)               
+            for f = 0:flags.density:100             
                 conn.bkg_fsi = f;
                 
                 if flags.width && conn.ch_all > 1

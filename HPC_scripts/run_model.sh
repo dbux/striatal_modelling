@@ -2,14 +2,15 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-# export RMEM="30G"
+export RMEM="30G"
 # export TIME="1:30:00"
-export RMEM="3G"
-export TIME="0:03:00"
+export TIME="1:00:00"
 
 # Set model name and experiment number
-export MODEL="Physical"
-export STRIATUM="20.04.10_17.00_84900+849"
+# export MODEL="Physical"
+export MODEL="Physical_2ch_nosep"
+# export STRIATUM="20.04.10_17.00_84900+849"
+export STRIATUM="DEFAULT"
 export CHANNELS=1
 
 # Set parallel job stride values (modified later in script)
