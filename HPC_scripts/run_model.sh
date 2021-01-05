@@ -2,7 +2,7 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-export RMEM="30G"
+export RMEM="60G"
 export TIME="1:30:00"
 
 # Set model name and experiment number
