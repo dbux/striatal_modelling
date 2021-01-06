@@ -1,0 +1,163 @@
+#!/bin/bash
+#$ -M d.r.buxton@sheffield.ac.uk
+#$ -m ea
+#$ -j y
+#$ -o ~/logs/
+#$ -e ~/logs/
+
+# Variable descriptors
+export M="bkMSN"
+export F="bkFSI"
+export C="wCH"
+
+# # Variable defaults
+# export FID="0"
+# export MID="0"
+# export CID="50"
+
+# Vary over FSI / MSN / WCH variables?
+# export VAR_FSI="0"
+# export VAR_MSN="0"
+# export VAR_WCH="0"
+
+# # Number of variations in FSI / MSN / WCH variables
+# export NUM_FSI="6"
+# export NUM_MSN="5"
+# export NUM_WCH="5"
+
+# # Difference between each FSI / MSN / WCH variable
+# export VAL="20"
+#
+# # Maximum value for FSI / MSN / WCH variables
+# export MAX_FSI=`echo "${NUM_FSI} * ${VAL}" | bc`
+# export MAX_MSN=`echo "${NUM_MSN} * ${VAL}" | bc`
+# export MAX_WCH=`echo "${NUM_WCH} * ${VAL}" | bc`
+
+# # Calculate the multiplier for each variable
+# function get_id {
+# 	# Each variable (bkFSI, bkMSN, wCH) has five possible values
+# 	# The quotient of the current task ID and 5^(number of variables - 1) allows us to iterate over each one at the required intervals
+# 	export ID=`echo "scale=0 ; (${SGE_TASK_ID} - 1) / (${NUM_VAR} ^ ${EXP_VAR})" | bc`
+#
+# 	while [ "${ID}" -gt "${NUM_VAR}" ]; do
+# 		export ID=`echo "scale=0 ; (${ID} - (${NUM_VAR} - 1)) / (${NUM_VAR} ^ ${EXP_VAR})" | bc`
+# 	done
+#
+# 	# DEBUG
+# 	echo "Internal ID:" ${ID}
+#
+# 	# Increment exponent value for next value
+# 	export EXP_VAR=`echo ${EXP_VAR} + 1 | bc`
+# }
+
+# # Compute FSI / MSN / WCH variables
+# if [ ! -z "${VAR_FSI}" ]; then
+# 	export FID=`echo "(${SGE_TASK_ID} - 1) * ${VAL}" | bc`
+# 	while [ "${FID}" -ge "${MAX_FSI}" ]; do
+# 		export FID=`echo "${FID} - ${MAX_FSI}" | bc`
+# 	done
+# fi
+#
+# if [ ! -z "${VAR_MSN}" ]; then
+# 	export MID=`echo "(${SGE_TASK_ID} - 1) * ${VAL}" | bc`
+# 	while [ "${MID}" -ge "${MAX_MSN}" ]; do
+# 		export MID=`echo "${MID} - ${MAX_MSN}" | bc`
+# 	done
+# fi
+#
+# if [ ! -z "${VAR_WCH}" ]; then
+# 	# WCH calculation is different as range starts at 20 instead of 0
+# 	export CID=`echo "${SGE_TASK_ID} * ${VAL}" | bc`
+# 	while [ "${CID}" -gt "${MAX_WCH}" ]; do
+# 		export CID=`echo "${CID} - ${MAX_WCH}" | bc`
+# 	done
+# fi
+
+# Set unique trial identifier
+if [ "${CHANNELS}" -gt 1 ]; then
+	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}"_2CH"
+else
+	export XID=${M}${MID}"_"${F}${FID}"_1CH"
+fi
+
+# TEMP: FORCING DUPLICATE CONNECTION LISTS FOR TEST
+export XID="bkMSN60_bkFSI0_1CH_DUPLICATE"
+
+
+echo "Unique trial identifier:" ${XID}
+
+# TODO: Check if XID connection list exists and cancel trial otherwise
+#
+# Set unique per-simulation work and output directories
+export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
+export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
+echo "Working directory: ${WORK_DIR}"
+echo "Output directory: ${OUTPUT_DIR}"
+
+# Check for directory existence
+if [ ! -d ${WORK_DIR} ]; then
+    mkdir -p ${WORK_DIR}
+else
+	echo "WARNING! Working directory already exists; proceeding anyway"
+fi
+
+# Create output directory
+if [ ! -d ${OUTPUT_DIR} ]; then
+	mkdir -p ${OUTPUT_DIR}
+else
+	echo "WARNING! Output directory already exists; proceeding anyway"
+fi
+
+# Model construction and execution loop
+# cd ${LISTS_DIR}
+echo ""
+echo "Copying connection lists…"
+cp -v	${LISTS_DIR}/conn_* 			${WORK_DIR}
+cp -v	${LISTS_DIR}/${XID}/conn_* 		${WORK_DIR}
+
+# Copy other model files to work directory
+cp -vn 	${MODEL_DIR}/* 					${WORK_DIR}
+
+# Rewrite model connection lists
+echo ""
+echo "Modifying model.xml…"
+
+# Check for existence of model.xml and modify number of connections
+cd ${WORK_DIR}
+if [ ! -e model.xml ]; then
+	echo "No model.xml found in $(pwd); aborting."
+else
+	echo "In ${WORK_DIR}:"
+
+	# For every .bin file
+	for file in *.bin; do
+		# Break out of the loop if no .bin files exist
+		[ -f "$file" ] || break
+		echo " ·  ${file} found…"
+
+		# Get name of file without extension
+		FILE_CSV=$(basename $file .bin).csv
+
+		# If a corresponding CSV exists
+		if [ -f ${FILE_CSV} ]; then
+			# Get the number of CSV rows
+			CSV_LINES=$(awk 'END{ print NR }' ${FILE_CSV})
+
+			# Construct the string occurring immediately before the number of connections
+			STR_MATCH=${file}'" num_connections="'
+
+			# Correct the number of connections in model.xml
+			sed -i "s/\(${STR_MATCH}\)[0-9]\+/\1${CSV_LINES}/" model.xml
+			echo "(✓) ${FILE_CSV} found (${CSV_LINES} connections)"
+		else
+			echo "(!) ${FILE_CSV} not found"
+		fi
+	done
+fi
+
+# Execute model on SGE
+echo ""
+echo "Executing model '${MODEL}' experiment #${EXP_NO} version ${XID}…"
+cd ${S2B_DIR}
+export PATH=${PATH}:${HOME}/bin
+${S2B_DIR}/convert_script_s2b -gs -m ${WORK_DIR} -e ${EXP_NO} -w ${WORK_DIR} -o ${OUTPUT_DIR}

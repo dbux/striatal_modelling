@@ -6,7 +6,7 @@ export RMEM="60G"
 export TIME="1:30:00"
 
 # Set model name and experiment number
-export MODEL="Physical_2CH_old"
+export MODEL="Physical"
 export STRIATUM="20.04.10_17.00_84900+849"
 export CHANNELS=1
 
