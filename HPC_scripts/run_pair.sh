@@ -92,9 +92,9 @@ export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 echo "Executing model '${MODEL_NEW}' experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export MODEL=${MODEL_NEW}
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL_NEW} pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Physical_NEW" pair_submit.sge
 
 echo "Executing model '${MODEL_OLD}' experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export MODEL=${MODEL_OLD}
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N ${MODEL_OLD} pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Physical_OLD" pair_submit.sge
