@@ -10,69 +10,6 @@ export M="bkMSN"
 export F="bkFSI"
 export C="wCH"
 
-# # Variable defaults
-# export FID="0"
-# export MID="0"
-# export CID="50"
-
-# Vary over FSI / MSN / WCH variables?
-# export VAR_FSI="0"
-# export VAR_MSN="0"
-# export VAR_WCH="0"
-
-# # Number of variations in FSI / MSN / WCH variables
-# export NUM_FSI="6"
-# export NUM_MSN="5"
-# export NUM_WCH="5"
-
-# # Difference between each FSI / MSN / WCH variable
-# export VAL="20"
-#
-# # Maximum value for FSI / MSN / WCH variables
-# export MAX_FSI=`echo "${NUM_FSI} * ${VAL}" | bc`
-# export MAX_MSN=`echo "${NUM_MSN} * ${VAL}" | bc`
-# export MAX_WCH=`echo "${NUM_WCH} * ${VAL}" | bc`
-
-# # Calculate the multiplier for each variable
-# function get_id {
-# 	# Each variable (bkFSI, bkMSN, wCH) has five possible values
-# 	# The quotient of the current task ID and 5^(number of variables - 1) allows us to iterate over each one at the required intervals
-# 	export ID=`echo "scale=0 ; (${SGE_TASK_ID} - 1) / (${NUM_VAR} ^ ${EXP_VAR})" | bc`
-#
-# 	while [ "${ID}" -gt "${NUM_VAR}" ]; do
-# 		export ID=`echo "scale=0 ; (${ID} - (${NUM_VAR} - 1)) / (${NUM_VAR} ^ ${EXP_VAR})" | bc`
-# 	done
-#
-# 	# DEBUG
-# 	echo "Internal ID:" ${ID}
-#
-# 	# Increment exponent value for next value
-# 	export EXP_VAR=`echo ${EXP_VAR} + 1 | bc`
-# }
-
-# # Compute FSI / MSN / WCH variables
-# if [ ! -z "${VAR_FSI}" ]; then
-# 	export FID=`echo "(${SGE_TASK_ID} - 1) * ${VAL}" | bc`
-# 	while [ "${FID}" -ge "${MAX_FSI}" ]; do
-# 		export FID=`echo "${FID} - ${MAX_FSI}" | bc`
-# 	done
-# fi
-#
-# if [ ! -z "${VAR_MSN}" ]; then
-# 	export MID=`echo "(${SGE_TASK_ID} - 1) * ${VAL}" | bc`
-# 	while [ "${MID}" -ge "${MAX_MSN}" ]; do
-# 		export MID=`echo "${MID} - ${MAX_MSN}" | bc`
-# 	done
-# fi
-#
-# if [ ! -z "${VAR_WCH}" ]; then
-# 	# WCH calculation is different as range starts at 20 instead of 0
-# 	export CID=`echo "${SGE_TASK_ID} * ${VAL}" | bc`
-# 	while [ "${CID}" -gt "${MAX_WCH}" ]; do
-# 		export CID=`echo "${CID} - ${MAX_WCH}" | bc`
-# 	done
-# fi
-
 # Set unique trial identifier
 if [ "${CHANNELS}" -gt 1 ]; then
 	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}"_2CH"
@@ -81,16 +18,15 @@ else
 fi
 
 # TEMP: FORCING DUPLICATE CONNECTION LISTS FOR TEST
-export XID="bkMSN60_bkFSI0_1CH_DUPLICATE"
-
-
+export XID="bkMSN60_bkFSI0_1CH"
 echo "Unique trial identifier:" ${XID}
 
-# TODO: Check if XID connection list exists and cancel trial otherwise
-#
 # Set unique per-simulation work and output directories
-export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
-export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
+# export WORK_DIR="${WORK_ROOT}/${MODEL}/${XID}"
+# export OUTPUT_DIR="${OUTPUT_ROOT}/${MODEL}/${XID}"
+
+export WORK_DIR="${WORK_ROOT}/${STRIATUM}/${XID}"
+export OUTPUT_DIR="${OUTPUT_ROOT}/${STRIATUM}/${XID}"
 echo "Working directory: ${WORK_DIR}"
 echo "Output directory: ${OUTPUT_DIR}"
 
