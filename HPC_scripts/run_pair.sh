@@ -10,8 +10,8 @@ export MODEL="Physical_2CH"
 # export MODEL_NEW="Physical_2CH"
 # export MODEL_OLD="Physical_2CH_old"
 # export STRIATUM="20.04.10_17.00_84900+849"
-export STRIATUM_HI-R="21.01.08_15.30_84900+811(r0.95)"
-export STRIATUM_LO-R="21.01.08_16.16_84900+811(r0.05)"
+export STRIATUM_HIR="21.01.08_15.30_84900+811(r0.95)"
+export STRIATUM_LOR="21.01.08_16.16_84900+811(r0.05)"
 export CHANNELS=1
 export EXP_NO=1
 
@@ -54,11 +54,11 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM_HI-R} (${CHANNELS} channels)"
-export STRIATUM=${STRIATUM_HI-R}
+export STRIATUM=${STRIATUM_HIR}
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Physical_NEW" pair_submit.sge
 
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM_LO-R} (${CHANNELS} channels)"
-export STRIATUM=${STRIATUM_LO-R}
+export STRIATUM=${STRIATUM_LOR}
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Physical_OLD" pair_submit.sge
