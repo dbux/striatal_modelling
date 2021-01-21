@@ -3,7 +3,7 @@
 [attr.root, ~] = get_paths; % Get path for saving striatum data files
 
 %% Physical striatum attributes
-attr.phys.size        = 300;     % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
+attr.phys.size        = 1000;     % Size of model striatum each side (μm) (Was 250μm in Humphries et al. 2009)
 attr.phys.min_dist    = 10;      % Minimum distance between neurons (μm)
 attr.phys.centre_rad  = 75;      % Radius of central region free from edge effects (μm)
 attr.phys.msn_density = 84900;   % Number of MSNs to place per mm^3 (should be 84,900)

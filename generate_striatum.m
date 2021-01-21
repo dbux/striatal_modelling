@@ -26,6 +26,10 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 get_attributes
 
 %% START
+if attr.flags.progress
+    timer.all = tic;
+end
+            
 if ~exist('s_ID', 'var')
     if attr.flags.physical            
         % CREATE PHYSICAL STRIATUM
@@ -56,7 +60,7 @@ if ~exist('s_ID', 'var')
             end
 
             % Save striatum data
-            str_name = fullfile(attr.save_path, 'striatum.mat');
+            str_name = fullfile(attr.save_path, 'striatum.mat', '-v7.3');
             save(str_name, 'striatum');
 
             if attr.flags.progress
@@ -70,7 +74,7 @@ if ~exist('s_ID', 'var')
         end
 
         % Save neuron connection data
-        con_name = fullfile(attr.save_path, 'connections.mat');
+        con_name = fullfile(attr.save_path, 'connections.mat', '-v7.3');
         save(con_name, 'connections', 'list', 'attr');
 
         if attr.flags.progress
@@ -95,9 +99,7 @@ else
     end
 end
 
-
-% TODO: ADD CODE TO GIVE PROGRESS ON CONNECTION LISTS
-
+% GENERATE SPINECREATOR CONNECTION LISTS
 if attr.flags.physical
     [connection_lists, attr] = gen_connection_lists(connections, list, attr, striatum); 
     if attr.flags.save
@@ -107,30 +109,9 @@ else
     [connection_lists, ~] = gen_connection_lists(connections, list, attr);
 end
 
-% TODO: move save_list from phys_connlist to new function
-% TODO: Move striatal export function
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if attr.flags.progress
+    fprintf('Everything done! Total time elapsed: %1.2f minutes.\n', toc(timer.all) / 60)
+end
 
 
 
