@@ -10,8 +10,8 @@ export MODEL="Physical_2CH"
 # export MODEL_NEW="Physical_2CH"
 # export MODEL_OLD="Physical_2CH_old"
 # export STRIATUM="20.04.10_17.00_84900+849"
-export STRIATUM_P="21.01.08_15.30_84900+811"
-export STRIATUM_S="21.01.21_12.33_6000+60"
+export STRIATUM_P="21.01.21_15.32_84900+811"
+export STRIATUM_S="21.01.21_16.18_6000+60"
 export CHANNELS=1
 export EXP_NO=1
 
@@ -48,9 +48,6 @@ echo	" done!"
 
 # Set model and connection list directories
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
-
-# export STRIATUM=${STRIATUM_HI-R}
-# export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 
 # Send jobs to SGE
 echo "Executing model '${MODEL}' experiment #${EXP_NO} on striatum ${STRIATUM_P} (${CHANNELS} channels)"

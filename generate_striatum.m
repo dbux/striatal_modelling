@@ -20,7 +20,7 @@ addpath(genpath('/home/ac1drb/MatLab'));
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
 % Optionally define an existing striatum to generate connection lists for
-% s_ID = '21.01.19_11.28_5434+51';
+% s_ID = '21.01.21_13.32_84900+811';
 
 % Import attributes 
 get_attributes
@@ -60,8 +60,8 @@ if ~exist('s_ID', 'var')
             end
 
             % Save striatum data
-            str_name = fullfile(attr.save_path, 'striatum.mat', '-v7.3');
-            save(str_name, 'striatum');
+            str_name = fullfile(attr.save_path, 'striatum.mat');
+            save(str_name, 'striatum', '-v7.3');
 
             if attr.flags.progress
                 fprintf('took %1.2f seconds.\n', toc(timer.save_str))
@@ -74,8 +74,8 @@ if ~exist('s_ID', 'var')
         end
 
         % Save neuron connection data
-        con_name = fullfile(attr.save_path, 'connections.mat', '-v7.3');
-        save(con_name, 'connections', 'list', 'attr');
+        con_name = fullfile(attr.save_path, 'connections.mat');
+        save(con_name, 'connections', 'list', 'attr', '-v7.3');
 
         if attr.flags.progress
             fprintf('took %1.2f seconds. Done!\n', toc(timer.save_con))
@@ -87,12 +87,15 @@ else
         % Load existing striatum and connection data
         fprintf('Loading existing data for striatum ID %s… ', s_ID);
         try
-            load(fullfile(attr.path, s_ID, 'striatum.mat'));
+            load(fullfile(attr.root, s_ID, 'striatum.mat'));
         catch
             fprintf('no physical striatum found; trying to load statistical connections… ')
         end
-        load(fullfile(attr.path, s_ID, 'connections.mat'))
+        load(fullfile(attr.root, s_ID, 'connections.mat'))
         fprintf('done!\n')
+        
+        % TODO: PREVENT ATTR OVERWRITING
+        
     catch
         fprintf('failed!\n');
         error('Unable to load any existing striatal data');
