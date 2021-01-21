@@ -22,15 +22,19 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
 %% CONFIGURATION
 % Basic parameters
-attr.Striatum_ID = '20.04.10_17.00_84900+849';
+% attr.Striatum_ID = '20.04.10_17.00_84900+849';
+attr.Striatum_ID = '21.01.08_15.30_84900+811';
+% attr.Experiment  = 'Physical_2CH_new';
 attr.Experiment  = 'Physical_2CH';
-attr.Channels    = 2;
+attr.Channels    = 1;
 
 % TODO: Extract number of channels from directory name
 
 if attr.Channels == 1
     attr.C1_start = 1000;
     attr.C1_end   = 2000;
+%     attr.C1_start = 0;
+%     attr.C1_end   = 1000;
 elseif attr.Channels == 2
     attr.C1_start = 500;
     attr.C1_end   = 2500;
@@ -150,9 +154,9 @@ for i = 1:size(attr.Logs, 2)
                 attr.Logs(i).Population = 'CH2_input';
             elseif contains(attr.Logs(i).Population, 'BKG')
                 attr.Logs(i).Population = 'BKG_input';
-            % TEMP FOR 1A input
-            elseif contains(attr.Logs(i).Population, 'CH1A_input')
-                attr.Logs(i).Population = 'CH1A_input';
+            % TEMP FOR extra input
+            elseif contains(attr.Logs(i).Population, 'MCtx_R2S')
+                attr.Logs(i).Population = 'MCtx_input';
             else
                 error('Unknown striatal population encountered'); 
             end
@@ -191,6 +195,7 @@ for i = 1:size(attr.Logs, 2)
 %         attr.Logs(i).Population);
     % Create unique headers for this trial
     header = strcat(attr.Logs(i).Trial, '_', attr.Logs(i).Population);
+%     header = strcat(attr.Experiment, '_', attr.Logs(i).Trial, '_', attr.Logs(i).Population);
     
     % If there are 2 or more channels and the current logfile is not an input
     if attr.Channels > 1 && ~contains(attr.Logs(i).Population, 'input')
@@ -289,14 +294,19 @@ for i = 1:size(attr.Logs, 2)
         % Modify start and end time of oscillation analysis
         switch attr.Logs(i).Population
             case {'CH1_input', 'CH1A_input'}
+%                 t_start = 1500;
+%                 t_end   = 2500;
                 t_start = 1500;
-                t_end   = 2500;
+                t_end   = 1700;
             case 'CH2_input'
                 t_start = 2500;
                 t_end   = 3500;
             case 'BKG_input'
                 t_start = 2500;
                 t_end   = 3500;
+            case 'MCtx_input'
+                t_start = 1500;
+                t_end   = 1700;
             otherwise
                 t_start = attr.C1_start;
                 t_end   = attr.C1_end;
@@ -336,13 +346,13 @@ fprintf('done!\n')
 
 function [tot, avg, rol, spc, frq] = make_headers(header, bw)
     % Spikes
-    tot = strcat(header, '_SPtotal'); 
-    avg = strcat(header, '_SPmean');          
-    rol = strcat(header, sprintf('_SProll_%dms', bw));
+    tot = matlab.lang.makeValidName(strcat(header, '_SPtotal')); 
+    avg = matlab.lang.makeValidName(strcat(header, '_SPmean'));          
+    rol = matlab.lang.makeValidName(strcat(header, sprintf('_SProll_%dms', bw)));
 
     % Oscillations
-    spc = strcat(header, '_OSspec');
-    frq = strcat(header, '_OSfreq');
+    spc = matlab.lang.makeValidName(strcat(header, '_OSspec'));
+    frq = matlab.lang.makeValidName(strcat(header, '_OSfreq'));
 end
 
 function [spk_tot, spk_avg, spk_rol] = analyse_spikes(log, spikes, bw)
@@ -365,6 +375,7 @@ function [osc_spc, osc_frq] = analyse_oscillations(log, spikes, time, params)
     trm_s = spikes((time(2) > spikes(:,1) & spikes(:,1) > time(1)), 1);
     
     [osc_spc, osc_frq, ~] = mtspectrumpt(trm_s, params);
+%     [osc_spc, osc_frq, ~] = mtspectrumpt(trm_s);
     
     % Calibrate spectral power to be accurate per *active* neuron
     osc_spc = osc_spc / log.Neurons_active ^ 2;

@@ -6,8 +6,8 @@ DATA_DIR="/Volumes/GoogleDrive/My Drive/1 - Projects/Striatal oscillations"
 echo "Syncing models from ${DATA_DIR}/Models…"
 rsync -ahisuvz "${DATA_DIR}/Models/"	"ac1drb@sharc.sheffield.ac.uk:/data/ac1drb/models"
 
-echo "Syncing striatums from ${DATA_DIR}/Striatums…"
-rsync -ahisuvz "${DATA_DIR}/Striatums/"	"ac1drb@sharc.sheffield.ac.uk:/data/ac1drb/striatums"
+# echo "Syncing striatums from ${DATA_DIR}/Striatums…"
+# rsync -ahisuvz "${DATA_DIR}/Striatums/"	"ac1drb@sharc.sheffield.ac.uk:/data/ac1drb/striatums"
 
 # Scripts now synced via GitHub
 # echo "Syncing bash scripts from ${DATA_DIR}/Scripts…"
