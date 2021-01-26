@@ -101,7 +101,7 @@ else
         load(fullfile(attr.root, s_ID, 'connections.mat'))
         fprintf('done!\n')
         
-         attr.conn = temp;
+        attr.conn = temp;
         
     catch
         fprintf('failed!\n');
