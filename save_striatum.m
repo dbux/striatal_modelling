@@ -5,65 +5,70 @@ function save_striatum(striatum, connections, list, attr)
     conn = attr.conn;
     flags = attr.flags;
     
-    if flags.progress
-        timer.save = tic;
-        fprintf('\nSaving neuron and connection data… ')
-    end
-    
-    % Get physical co-ordinates of all MSNs and FSIs
-    striatum.msn.d1  = striatum.neurons(list.d1(:, 1), :);
-    striatum.msn.d2  = striatum.neurons(list.d2(:, 1), :);
-    striatum.msn.all = [striatum.msn.d1 ; striatum.msn.d2];
-    striatum.fsi.all = striatum.neurons(list.fsi(:, 1), :);
-
-    striatum.fsi.active    = [];
-    striatum.fsi.inactive  = [];
-    striatum.msn.active.d1 = [];
-    striatum.msn.active.d2 = [];
-
-    for i = 1:conn.ch_all
-        % Set dynamic structure fieldname
-        ch = sprintf('ch%d', i);
-
-        % Get active FSIs
-        [~, idf] = ismember(connections.(ch).fsi.(attr.conn_id)(:, 2), list.fsi(:, 2));
-        striatum.fsi.active = unique([striatum.fsi.active ; striatum.fsi.all(idf, :)], 'rows');
-
-        striatum.msn.(ch).all = [];
-
-        % Get active MSNs
-        for j = 1:2   
-            % Set dynamic structure fieldname
-            dx = sprintf('d%d', j);
-
-            [~, idm] = ismember(connections.(ch).(dx).(attr.conn_id)(:, 2), list.(dx)(:, 2));
-            striatum.msn.(ch).(dx)   = striatum.neurons(list.(dx)(idm, 1), :);
-            striatum.msn.(ch).all    = [striatum.msn.(ch).all    ; striatum.msn.(ch).(dx)];
-            striatum.msn.active.(dx) = [striatum.msn.active.(dx) ; striatum.msn.(ch).(dx)];
-        end
-    end
-
-    % Get inactive neurons
-    striatum.msn.inactive.d1  = striatum.msn.d1(~ismember(striatum.msn.d1, striatum.msn.active.d1, 'rows'), :);
-    striatum.msn.inactive.d2  = striatum.msn.d2(~ismember(striatum.msn.d2, striatum.msn.active.d2, 'rows'), :);
-    striatum.msn.inactive.all = [striatum.msn.inactive.d1 ; striatum.msn.inactive.d2];
-    striatum.fsi.inactive     = striatum.fsi.all(~ismember(striatum.fsi.all, striatum.fsi.active, 'rows'), :);
-
-    % Export co-ordinates of all MSNs and FSIs
+    % Create neuron data directory
     save_dir = fullfile(attr.save_path, 'neuron_data', attr.conn_id);
     if ~exist(save_dir, 'dir')
         mkdir(save_dir);
     end
-
-    export_striatum(striatum.msn, 'striatum.msn', save_dir)
-    export_striatum(striatum.fsi, 'striatum.fsi', save_dir)
-
-    % Save list of neurons
-    list_name = fullfile(save_dir, 'list.mat');   
-    save(list_name, 'list');
+        
+    % Only save neuron data if not previously saved
+    if isempty(dir(save_dir))
     
-    if flags.progress
-        fprintf('took %1.2f minutes. All done!\n', toc(timer.save)/60)
+        if flags.progress
+            timer.save = tic;
+            fprintf('\nSaving neuron and connection data… ')
+        end
+
+        % Get physical co-ordinates of all MSNs and FSIs
+        striatum.msn.d1  = striatum.neurons(list.d1(:, 1), :);
+        striatum.msn.d2  = striatum.neurons(list.d2(:, 1), :);
+        striatum.msn.all = [striatum.msn.d1 ; striatum.msn.d2];
+        striatum.fsi.all = striatum.neurons(list.fsi(:, 1), :);
+
+        striatum.fsi.active    = [];
+        striatum.fsi.inactive  = [];
+        striatum.msn.active.d1 = [];
+        striatum.msn.active.d2 = [];
+
+        for i = 1:conn.ch_all
+            % Set dynamic structure fieldname
+            ch = sprintf('ch%d', i);
+
+            % Get active FSIs
+            [~, idf] = ismember(connections.(ch).fsi.(attr.conn_id)(:, 2), list.fsi(:, 2));
+            striatum.fsi.active = unique([striatum.fsi.active ; striatum.fsi.all(idf, :)], 'rows');
+
+            striatum.msn.(ch).all = [];
+
+            % Get active MSNs
+            for j = 1:2   
+                % Set dynamic structure fieldname
+                dx = sprintf('d%d', j);
+
+                [~, idm] = ismember(connections.(ch).(dx).(attr.conn_id)(:, 2), list.(dx)(:, 2));
+                striatum.msn.(ch).(dx)   = striatum.neurons(list.(dx)(idm, 1), :);
+                striatum.msn.(ch).all    = [striatum.msn.(ch).all    ; striatum.msn.(ch).(dx)];
+                striatum.msn.active.(dx) = [striatum.msn.active.(dx) ; striatum.msn.(ch).(dx)];
+            end
+        end
+
+        % Get inactive neurons
+        striatum.msn.inactive.d1  = striatum.msn.d1(~ismember(striatum.msn.d1, striatum.msn.active.d1, 'rows'), :);
+        striatum.msn.inactive.d2  = striatum.msn.d2(~ismember(striatum.msn.d2, striatum.msn.active.d2, 'rows'), :);
+        striatum.msn.inactive.all = [striatum.msn.inactive.d1 ; striatum.msn.inactive.d2];
+        striatum.fsi.inactive     = striatum.fsi.all(~ismember(striatum.fsi.all, striatum.fsi.active, 'rows'), :);
+
+        % Export co-ordinates of all MSNs and FSIs
+        export_striatum(striatum.msn, 'striatum.msn', save_dir)
+        export_striatum(striatum.fsi, 'striatum.fsi', save_dir)
+
+%         % Save list of neurons
+%         list_name = fullfile(save_dir, 'list.mat');   
+%         save(list_name, 'list');
+
+        if flags.progress
+            fprintf('took %1.2f minutes. All done!\n', toc(timer.save)/60)
+        end
     end
     
     %% FUNCTIONS

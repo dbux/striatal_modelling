@@ -23,13 +23,14 @@ attr.stat.con_fsifsi = 12.8;
 attr.stat.con_fsigap = 0.65;
 
 %% Connectivity attributes
-attr.conn.ch_all      = 1;      % Total number of channels (not including background)
-attr.conn.bkg_msn     = 60;     % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
+attr.conn.ch_all      = 1;      % Total number of input channels (not including background)
+attr.conn.bkg_msn     = 40;     % Percentage of MSNs to receive only background noise. Leave at 0 for no background.
 attr.conn.bkg_fsi     = 0;      % Percentage of FSIs to receive only background noise. Leave at 0 for no background.
 attr.conn.delay_min   = 0.1;    % Minimum connection delay (must not be less than SpineCreator timestep)
+attr.conn.delay_mult  = 1;      % Connection list delay factor
 
 %% Process flags
-attr.flags.physical   = 0;      % Create physical-based striatum?
+attr.flags.physical   = 1;      % Create physical-based striatum?
 attr.flags.phys_ch    = 1;      % Physically partition two-channel striatum?
 attr.flags.debug      = 0;      % Show detailed information during initialization?
 attr.flags.progress   = 1;      % Show progress indicator? (Set to 0 for Iceberg)

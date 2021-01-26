@@ -61,19 +61,22 @@ function[connections, list] = gen_stat_connections(attr)
             % Trim the connections to match the expected probability value
             connections = connections((connections(:, 3) <= prob), :);
         end
+        
+        % Remove connection probability
+        connections(:, 3) = [];
 
-        if numel(varargin) > 0
-            % If a second argument is supplied use this as the connection delay,
-            % otherwise set to null (as required for gap connections)
-            try
-                connections(:, 3) = varargin{2};
-            catch
-                connections(:, 3) = [];
-            end
-        else
-            % Replace the random probability value with a fixed connection delay
-            connections(:, 3) = conn.delay_min;
-        end
+%         if numel(varargin) > 0
+%             % If a second argument is supplied use this as the connection delay,
+%             % otherwise set to null (as required for gap connections)
+%             try
+%                 connections(:, 3) = varargin{2};
+%             catch
+%                 connections(:, 3) = [];
+%             end
+%         else
+%             % Replace the random probability value with a fixed connection delay
+%             connections(:, 3) = conn.delay_min;
+%         end
         
         
         function[list] = gen_list_allall(n1, n2)

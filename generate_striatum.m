@@ -6,11 +6,13 @@
 % Consider speeding up generation by placing all neuons at once and performing distance checks later
 % Add more detailed header information to 3D neuron data export
 
+% Stop saving separate list.mat
+
 %% PREAMBLE
 % Reset initial state
 clear variables; clc
 % Specify RNG seed
-rng(3)
+rng(849)
 
 % Add MATLAB path for HPC execution
 addpath(genpath('~/MatLab'));
@@ -20,10 +22,12 @@ addpath(genpath('/home/ac1drb/MatLab'));
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
 
 % Optionally define an existing striatum to generate connection lists for
-% s_ID = '21.01.21_13.32_84900+811';
+s_ID = '21.01.25_20.06_84900+845';
+% s_ID = '21.01.26_09.51_6000+60';
 
 % Import attributes 
 get_attributes
+
 
 %% START
 if attr.flags.progress
@@ -91,10 +95,13 @@ else
         catch
             fprintf('no physical striatum found; trying to load statistical connections… ')
         end
+             
+        temp = attr.conn;
+        
         load(fullfile(attr.root, s_ID, 'connections.mat'))
         fprintf('done!\n')
         
-        % TODO: PREVENT ATTR OVERWRITING
+         attr.conn = temp;
         
     catch
         fprintf('failed!\n');
@@ -106,6 +113,7 @@ end
 if attr.flags.physical
     [connection_lists, attr] = gen_connection_lists(connections, list, attr, striatum); 
     if attr.flags.save
+        % TODO: EXCLUDE THIS IF IT ALREADY EXISTS
         save_striatum(striatum, connection_lists, list, attr);
     end
 else
@@ -117,6 +125,14 @@ if attr.flags.progress
 end
 
 
+
+
+
+
+
+% function attr = preserve(this)
+% 
+% end
 
 % % Sanity checks
 % if phys.size > 1000

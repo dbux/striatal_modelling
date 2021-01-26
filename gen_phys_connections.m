@@ -17,9 +17,9 @@ function[connections, list] = gen_phys_connections(striatum, attr)
     fsi = 3;
 
     % Prellocate synaptic connection lists
-    connections.msnmsn = zeros((1000*length(striatum.linear)),3);
-    connections.fsimsn = zeros((1000*length(striatum.linear)),3);
-    connections.fsifsi = zeros((1000*length(striatum.linear)),3);
+    connections.msnmsn = zeros((1000 * length(striatum.linear)), 3);
+    connections.fsimsn = zeros((1000 * length(striatum.linear)), 3);
+    connections.fsifsi = zeros((1000 * length(striatum.linear)), 3);
     connections.gap    = [];    % Gap connection list does not need preallocation
 
     if flags.progress
@@ -75,10 +75,10 @@ function[connections, list] = gen_phys_connections(striatum, attr)
         % Get the values of only the desired connection types. For FSI-FSI 
         % connections we want values for both synapses and gap junctions so two 
         % columns are needed
-        coninf.exp_this(coninf.type==(msn+msn),1) = coninf.exp_all(coninf.type==(msn+msn),1);   
-        coninf.exp_this(coninf.type==(fsi+msn),1) = coninf.exp_all(coninf.type==(fsi+msn),2);   
-        coninf.exp_this(coninf.type==(fsi+fsi),1) = coninf.exp_all(coninf.type==(fsi+fsi),3);   
-        coninf.exp_this(coninf.type==(fsi+fsi),2) = coninf.exp_all(coninf.type==(fsi+fsi),4);
+        coninf.exp_this(coninf.type==(msn+msn), 1) = coninf.exp_all(coninf.type==(msn+msn), 1);   
+        coninf.exp_this(coninf.type==(fsi+msn), 1) = coninf.exp_all(coninf.type==(fsi+msn), 2);   
+        coninf.exp_this(coninf.type==(fsi+fsi), 1) = coninf.exp_all(coninf.type==(fsi+fsi), 3);   
+        coninf.exp_this(coninf.type==(fsi+fsi), 2) = coninf.exp_all(coninf.type==(fsi+fsi), 4);
 
         % Because some expected connection values are >1, a standard method for
         % generating probabilistic connections is required:
@@ -153,9 +153,9 @@ function[connections, list] = gen_phys_connections(striatum, attr)
 
     % Convert connections distances to delay
     % Multiply conduction velocity in m/s by 1,000 for equivalent in μm/ms
-	connections.msnmsn(:,3) = max(connections.msnmsn(:,3) ./ (phys.cv_msnmsn * 1000), conn.delay_min);
-    connections.fsimsn(:,3) = max(connections.fsimsn(:,3) ./ (phys.cv_fsimsn * 1000), conn.delay_min);
-	connections.fsifsi(:,3) = max(connections.fsifsi(:,3) ./ (phys.cv_fsifsi * 1000), conn.delay_min);
+% 	connections.msnmsn(:,3) = max(connections.msnmsn(:,3) ./ (phys.cv_msnmsn * 1000), conn.delay_min);
+% 	connections.fsimsn(:,3) = max(connections.fsimsn(:,3) ./ (phys.cv_fsimsn * 1000), conn.delay_min);
+% 	connections.fsifsi(:,3) = max(connections.fsifsi(:,3) ./ (phys.cv_fsifsi * 1000), conn.delay_min);
     
     % Extract list of each type of neuron
     [connections, list] = get_neuron_list(connections); 

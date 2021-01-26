@@ -23,10 +23,26 @@ warning('off', 'MATLAB:MKDIR:DirectoryExists');
 %% CONFIGURATION
 % Basic parameters
 % attr.Striatum_ID = '20.04.10_17.00_84900+849';
-attr.Striatum_ID = '21.01.08_15.30_84900+811';
+% attr.Striatum_ID = '21.01.21_15.32_84900+811';
+
 % attr.Experiment  = 'Physical_2CH_new';
-attr.Experiment  = 'Physical_2CH';
+% attr.Experiment  = '21.01.21_15.32_84900+811';
+
+id.phys = '21.01.25_20.06_84900+845';
+id.stat = '21.01.26_09.51_6000+60';
+
+attr.Label       = 'PHYS';
 attr.Channels    = 1;
+
+if strfind(attr.Label, 'STAT')
+    attr.Striatum_ID = id.stat;
+    attr.Experiment  = id.stat;
+elseif strfind(attr.Label, 'PHYS')
+    attr.Striatum_ID = id.phys;
+    attr.Experiment  = id.phys;
+else
+    error('Don''t know this label type')
+end
 
 % TODO: Extract number of channels from directory name
 
@@ -134,7 +150,8 @@ for i = 1:size(attr.Logs, 2)
     % Load physical striatal data if different to previous trial
     if i == 1 || ~strcmp(attr.Logs(i).Trial, attr.Logs(i - 1).Trial)
         fprintf('Loading data for trial %s… ', attr.Logs(i).Trial)
-        load(fullfile(attr.Striatum_path, 'neuron_data', attr.Logs(i).Trial, 'list.mat'), 'list');
+%         load(fullfile(attr.Striatum_path, 'neuron_data', attr.Logs(i).Trial, 'list.mat'), 'list');
+        load(fullfile(attr.Striatum_path, 'connections.mat'), 'list');
         fprintf('done!\n')
     end
         
@@ -155,8 +172,8 @@ for i = 1:size(attr.Logs, 2)
             elseif contains(attr.Logs(i).Population, 'BKG')
                 attr.Logs(i).Population = 'BKG_input';
             % TEMP FOR extra input
-            elseif contains(attr.Logs(i).Population, 'MCtx_R2S')
-                attr.Logs(i).Population = 'MCtx_input';
+%             elseif contains(attr.Logs(i).Population, 'MCtx_R2S')
+%                 attr.Logs(i).Population = 'MCtx_input';
             else
                 error('Unknown striatal population encountered'); 
             end
@@ -194,8 +211,8 @@ for i = 1:size(attr.Logs, 2)
 %         attr.Logs(i).Trial, '_', ...
 %         attr.Logs(i).Population);
     % Create unique headers for this trial
-    header = strcat(attr.Logs(i).Trial, '_', attr.Logs(i).Population);
-%     header = strcat(attr.Experiment, '_', attr.Logs(i).Trial, '_', attr.Logs(i).Population);
+%     header = strcat(attr.Striatum_ID, '_', attr.Experiment, '_', attr.Logs(i).Trial, '_', attr.Logs(i).Population);
+    header = strcat(attr.Label, '_', attr.Logs(i).Trial, '_', attr.Logs(i).Population);
     
     % If there are 2 or more channels and the current logfile is not an input
     if attr.Channels > 1 && ~contains(attr.Logs(i).Population, 'input')

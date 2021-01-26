@@ -1,12 +1,12 @@
 function[output_lists, attr] = gen_connection_lists(connections, list, attr, varargin)
-
-    % Path for saving lists (and checking existence of current lists)
-    attr.list_path = fullfile(attr.save_path, 'connection_lists');
-    
+   
     % Extract necessary attributes
     phys = attr.phys;
     conn = attr.conn;
     flags = attr.flags;
+    
+    % Path for saving lists (and checking existence of current lists)
+    attr.list_path = fullfile(attr.save_path, 'connection_lists', sprintf('delay_%1.1f', conn.delay_mult));
 
 	if attr.flags.physical
         try
@@ -171,7 +171,7 @@ function[output_lists, attr] = gen_connection_lists(connections, list, attr, var
             
             % If connections already exist, don't recreate
             if ~exist(fullfile(attr.list_path, ['conn_', name.src, '_to_', name.dst, '_syn0.csv']), 'file')        
-                output_lists.(msn_i).(msn_j) = create_list(connections.(msn_i).(msn_j), list.(msn_i), list.(msn_j));
+                output_lists.(msn_i).(msn_j) = create_list(connections.(msn_i).(msn_j), list.(msn_i), list.(msn_j), phys.cv_msnmsn);
                 
                 % Save connection lists
                 if flags.save
@@ -187,7 +187,7 @@ function[output_lists, attr] = gen_connection_lists(connections, list, attr, var
         
         % If connections already exist, don't recreate
         if ~exist(fullfile(attr.list_path, ['conn_', name.src, '_to_', name.dst, '_syn0.csv']), 'file')            
-            output_lists.fsi.(msn_i) = create_list(connections.fsi.(msn_i), list.fsi, list.(msn_i));
+            output_lists.fsi.(msn_i) = create_list(connections.fsi.(msn_i), list.fsi, list.(msn_i), phys.cv_fsimsn);
             
             % Save connection lists
             if flags.save
@@ -203,7 +203,7 @@ function[output_lists, attr] = gen_connection_lists(connections, list, attr, var
 
     % If connections already exist, don't recreate
     if ~exist(fullfile(attr.list_path, ['conn_', name.src, '_to_', name.dst, '_syn0.csv']), 'file')        
-        output_lists.fsi.fsi = create_list(connections.fsifsi, list.fsi, list.fsi);
+        output_lists.fsi.fsi = create_list(connections.fsifsi, list.fsi, list.fsi, phys.cv_fsifsi);
         
         % Save connection lists
         if flags.save
@@ -251,19 +251,49 @@ function[output_lists, attr] = gen_connection_lists(connections, list, attr, var
     if flags.progress
         fprintf('done! (%1.2fs)\n', toc(timer.conn2))
     end
+    
+    %% FUNCTIONS
+    function conn_list = create_list(input_list, src_list, dst_list, varargin)
+        % Convert MatLab neuron IDs to SpineCreator IDs and create connection list
+        [~, s] = ismember(input_list(:, 1), src_list(:, 1));
+        [~, d] = ismember(input_list(:, 2), dst_list(:, 1));
+
+%         % If a connection delay multiplier exists, use it
+%         try
+%             conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; input_list(:, 3)' .* attr.conn.delay_mult]'; 
+% %             conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; input_list(:, 3)' .* 0.02 .* 0.95 + 0.1]'; 
+%             
+%         catch
+%             conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; input_list(:, 3)']';
+%         end
+
+%         if size(input_list, 2) == 2
+%             % No third column == no distance == statistical striatum, use standard delay for all connections
+%             conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; repmat(attr.conn.delay_min * attr.conn.delay_mult, 1, size(input_list, 1))]';
+%         elseif size(input_list, 2) == 3
+%             % Third column present == physical distance in μm
+%             
+%             conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; max(input_list(:, 3) ./ (phys.cv_msnmsn * 1000 / attr.conn.delay_mult), conn.delay_min)']';
+%         else
+%             error('Incorrectly sized connection list')               
+%         end
+        
+        % If a connection distance and conductance velocity are given, construct
+        % distance-based connection delays
+        if size(input_list, 2) == 3 && exist('varargin', 'var')
+            velocity = varargin{1};
+            
+            % Multiply conduction velocity in m/s by 1,000 for equivalent in μm/ms
+            conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; max(input_list(:, 3) ./ (velocity * 1000 / conn.delay_mult), conn.delay_min)']';
+        else
+            conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; repmat(conn.delay_min * conn.delay_mult, 1, size(input_list, 1))]';
+        end
+            
+    end  
 end
 
 
 %% FUNCTIONS
-function conn_list = create_list(input_list, src_list, dst_list)
-    % Convert MatLab neuron IDs to SpineCreator IDs and create connection list
-    [~, s] = ismember(input_list(:, 1), src_list(:, 1));
-    [~, d] = ismember(input_list(:, 2), dst_list(:, 1));
-
-    conn_list = [src_list(s, 2)' ; dst_list(d, 2)' ; input_list(:, 3)']';  
-end  
-
-
 function[] = save_list(path, file, name, flags)
     % Given a pathname, a connection list and name, this will save the
     % connection list to a CSV and optionally convert it to binary format for
