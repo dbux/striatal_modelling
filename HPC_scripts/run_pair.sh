@@ -2,10 +2,9 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-# export RMEM="60G"
-export RMEM="10G"
-#export TIME="1:30:00"
-export TIME="0:30:00"
+export RMEM="60G"
+# export TIME="1:30:00"
+export TIME="12:00:00"
 
 # Set model name and experiment number
 export MODEL="Universal"
@@ -54,10 +53,10 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 
 # Send jobs to SGE
 # Physical model
-# export STRIATUM=${PHYS}
-# echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
-# export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-# qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
+export STRIATUM=${PHYS}
+echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
+export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
 
 # Statistical model
 export STRIATUM=${STAT}
