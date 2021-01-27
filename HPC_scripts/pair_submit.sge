@@ -17,7 +17,7 @@ else
 	export XID=${M}${MID}"_"${F}${FID}"_1CH"
 fi
 
-# TEMP: FORCING DUPLICATE CONNECTION LISTS FOR TEST
+# TEMP: FORCING SPECIFIC CONNECTION LISTS
 export XID="bkMSN60_bkFSI0_1CH"
 echo "Unique trial identifier:" ${XID}
 
@@ -49,13 +49,11 @@ fi
 
 echo ""
 echo "Copying connection lists…"
-# cp -v	${LISTS_DIR}/conn_* 			${WORK_DIR}
-# cp -v	${LISTS_DIR}/${XID}/conn_* 		${WORK_DIR}
 cp -v	${LISTS_DIR}/delay_${DELAY}/conn_* 			${WORK_DIR}
 cp -v	${LISTS_DIR}/delay_${DELAY}/${XID}/conn_* 	${WORK_DIR}
 
 # Copy other model files to work directory
-cp -vn 	${MODEL_DIR}/* 					${WORK_DIR}
+cp -vn 	${MODEL_DIR}/*	${WORK_DIR}
 
 # Rewrite model connection lists
 echo ""
