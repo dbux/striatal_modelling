@@ -2,9 +2,9 @@
 
 # Set HPC parameters
 export USER="ac1drb"
-export RMEM="60G"
+export RMEM="30G"
 # export TIME="1:30:00"
-export TIME="12:00:00"
+export TIME="8:00:00"
 
 # Set model name and experiment number
 export MODEL="Universal"
@@ -12,6 +12,7 @@ export MODEL="Universal"
 # export MODEL_OLD="Physical_2CH_old"
 # export STRIATUM="20.04.10_17.00_84900+849"
 export PHYS="21.01.25_20.06_84900+845"
+export SML="21.01.28_12.53_1326+15"
 export STAT="21.01.26_09.51_6000+60"
 export DELAY="1.0"
 export CHANNELS=1
@@ -60,6 +61,12 @@ qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "
 
 # Statistical model
 export STRIATUM=${STAT}
+echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
+export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_STAT" pair_submit.sge
+
+# Small phys model
+export STRIATUM=${SML}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_STAT" pair_submit.sge
