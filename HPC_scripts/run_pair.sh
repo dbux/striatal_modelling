@@ -69,4 +69,4 @@ qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "
 export STRIATUM=${SML}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_STAT" pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_SML" pair_submit.sge
