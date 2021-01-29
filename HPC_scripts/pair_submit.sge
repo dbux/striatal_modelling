@@ -10,6 +10,10 @@ export M="bkMSN"
 export F="bkFSI"
 export C="wCH"
 
+# Vary MSNs
+export MID=`echo "${SGE_TASK_ID} - 1" | bc`
+export FID=0
+
 # Set unique trial identifier
 if [ "${CHANNELS}" -gt 1 ]; then
 	export XID=${M}${MID}"_"${F}${FID}"_"${C}${CID}"_2CH"
@@ -18,7 +22,7 @@ else
 fi
 
 # TEMP: FORCING SPECIFIC CONNECTION LISTS
-export XID="bkMSN0_bkFSI0_1CH"
+# export XID="bkMSN0_bkFSI0_1CH"
 echo "Unique trial identifier:" ${XID}
 
 # Set unique per-simulation work and output directories

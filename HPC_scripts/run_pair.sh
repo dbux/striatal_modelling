@@ -11,7 +11,8 @@ export MODEL="Universal"
 # export MODEL_NEW="Physical_2CH"
 # export MODEL_OLD="Physical_2CH_old"
 # export STRIATUM="20.04.10_17.00_84900+849"
-export PHYS="21.01.25_20.06_84900+845"
+export LRG="21.01.25_20.06_84900+845"
+export MED="21.01.29_11.24_10612+106"
 export SML="21.01.28_12.53_1326+15"
 export STAT="21.01.26_09.51_6000+60"
 export DELAY="1.0"
@@ -20,8 +21,8 @@ export EXP_NO=1
 
 # Set parallel job stride values (modified later in script)
 export T_START="1"
-export T_STOP="1"
-export T_STRIDE="1"
+export T_STOP="61"
+export T_STRIDE="60"
 
 # Number of variations in FSI / MSN / WCH variables
 export NUM_FSI="6"
@@ -52,21 +53,28 @@ echo	" done!"
 # Set model and connection list directories
 export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 
+
 # Send jobs to SGE
-# Physical model
-export STRIATUM=${PHYS}
+# Large phys model
+export STRIATUM=${LRG}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
 
-# Statistical model
-export STRIATUM=${STAT}
+# Medium phys model
+export STRIATUM=${MED}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_STAT" pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
 
 # Small phys model
 export STRIATUM=${SML}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
 qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_SML" pair_submit.sge
+
+# Statistical model
+export STRIATUM=${STAT}
+echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
+export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_STAT" pair_submit.sge
