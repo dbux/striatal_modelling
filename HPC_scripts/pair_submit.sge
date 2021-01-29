@@ -18,7 +18,7 @@ else
 fi
 
 # TEMP: FORCING SPECIFIC CONNECTION LISTS
-export XID="bkMSN60_bkFSI0_1CH"
+export XID="bkMSN0_bkFSI0_1CH"
 echo "Unique trial identifier:" ${XID}
 
 # Set unique per-simulation work and output directories
