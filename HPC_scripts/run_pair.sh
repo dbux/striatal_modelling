@@ -59,13 +59,13 @@ export MODEL_DIR="${MODEL_ROOT}/${MODEL}"
 export STRIATUM=${LRG}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_LRG" pair_submit.sge
 
 # Medium phys model
 export STRIATUM=${MED}
 echo "Executing experiment #${EXP_NO} on striatum ${STRIATUM} (${CHANNELS} channels)"
 export LISTS_DIR="${LISTS_ROOT}/${STRIATUM}/connection_lists"
-qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_PHYS" pair_submit.sge
+qsub -V -l rmem=${RMEM} -l h_rt=${TIME} -t ${T_START}:${T_STOP}:${T_STRIDE} -N "Striatum_MED" pair_submit.sge
 
 # Small phys model
 export STRIATUM=${SML}
