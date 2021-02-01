@@ -20,15 +20,10 @@ OUTPUT_DIR=${FD}
 for dir in ${INPUT_DIR}/*/		# List directories in the form "/tmp/dirname/"
 do
 	dir=${dir%*/}     		 	# Remove the trailing "/"
-	echo "Dir is"
-	#echo ${dir##*/}				# Print everything after the final "/"
-	exp=${dir##*/}
-	echo ${exp}
-	#echo "Dir is"
-	#echo ${exp}
+	exp=${dir##*/}				# Print everything after the final "/"
 	
-	#echo "other dir is"
-	#echo ${dir##*/}
+	echo ""
+	echo "Zipping results from ${exp}…"
 	
 	tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${exp}\_${NOW}.tar.gz ${exp} \
 	--exclude 'model/*' \
@@ -39,13 +34,5 @@ do
 	--exclude 'run_brahms*'
 	
 done
-
-#tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${LABEL}\_${NOW}.tar.gz ${LABEL} \
-#--exclude 'model/*' \
-#--exclude 'model' \
-#--exclude 'run/*' \
-#--exclude 'run' \
-#--exclude 'output.script' \
-#--exclude 'run_brahms*'
 
 echo "Done!"
