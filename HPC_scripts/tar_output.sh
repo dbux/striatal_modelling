@@ -21,7 +21,9 @@ for dir in ${INPUT_DIR}/*/		# List directories in the form "/tmp/dirname/"
 do
 	dir=${dir%*/}     		 	# Remove the trailing "/"
 	echo "Dir is"
-	echo ${dir##*/}				# Print everything after the final "/"
+	#echo ${dir##*/}				# Print everything after the final "/"
+	exp=${dir##*/}
+	echo ${exp}
 	#echo "Dir is"
 	#echo ${exp}
 	
