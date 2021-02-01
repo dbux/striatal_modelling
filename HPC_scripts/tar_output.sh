@@ -19,13 +19,14 @@ OUTPUT_DIR=${FD}
 # From https://stackoverflow.com/a/2108296
 for dir in ${INPUT_DIR}/*/		# List directories in the form "/tmp/dirname/"
 do
-	exp=${dir%*/}     		 	# Remove the trailing "/"
-	#echo ${dir##*/}				# Print everything after the final "/"
+	dir=${dir%*/}     		 	# Remove the trailing "/"
 	echo "Dir is"
-	echo ${exp}
+	echo ${dir##*/}				# Print everything after the final "/"
+	#echo "Dir is"
+	#echo ${exp}
 	
-	echo "other dir is"
-	echo ${dir##*/}
+	#echo "other dir is"
+	#echo ${dir##*/}
 	
 	tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${exp}\_${NOW}.tar.gz ${exp} \
 	--exclude 'model/*' \
