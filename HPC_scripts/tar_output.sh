@@ -24,6 +24,9 @@ do
 	echo "Dir is"
 	echo ${exp}
 	
+	echo "other dir is"
+	echo ${dir##*/}
+	
 	tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${exp}\_${NOW}.tar.gz ${exp} \
 	--exclude 'model/*' \
 	--exclude 'model' \
