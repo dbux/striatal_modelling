@@ -22,8 +22,8 @@ do
 	dir=${dir%*/}     		 	# Remove the trailing "/"
 	exp=${dir##*/}				# Print everything after the final "/"
 	
-	echo ""
-	echo "Zipping results from ${exp}…"
+	
+	echo "Zipping results from experiment ${exp}…"
 	
 	tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${exp}\_${NOW}.tar.gz ${exp} \
 	--exclude 'model/*' \
@@ -33,6 +33,7 @@ do
 	--exclude 'output.script' \
 	--exclude 'run_brahms*'
 	
+	echo ""
 done
 
-echo "Done!"
+echo "All done!"
