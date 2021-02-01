@@ -20,7 +20,9 @@ OUTPUT_DIR=${FD}
 for dir in ${INPUT_DIR}/*/		# List directories in the form "/tmp/dirname/"
 do
 	exp=${dir%*/}     		 	# Remove the trailing "/"
-	echo ${dir##*/}				# Print everything after the final "/"
+	#echo ${dir##*/}				# Print everything after the final "/"
+	echo "Dir is"
+	echo ${exp}
 	
 	tar -C ${INPUT_DIR} -zvcf ${OUTPUT_DIR}/output_${exp}\_${NOW}.tar.gz ${exp} \
 	--exclude 'model/*' \
