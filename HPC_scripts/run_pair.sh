@@ -22,7 +22,7 @@ export EXP_NO=1
 # Set parallel job stride values (modified later in script)
 export T_START="1"
 export T_STOP="61"
-export T_STRIDE="60"
+export T_STRIDE="20"
 
 # Number of variations in FSI / MSN / WCH variables
 export NUM_FSI="6"
