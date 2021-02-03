@@ -7,7 +7,7 @@ export RMEM="30G"
 export TIME="8:00:00"
 
 # Set model name and experiment number
-export MODEL="Universal"
+export MODEL="Tomkins"
 # export MODEL_NEW="Physical_2CH"
 # export MODEL_OLD="Physical_2CH_old"
 # export STRIATUM="20.04.10_17.00_84900+849"
